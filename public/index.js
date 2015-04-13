@@ -207,12 +207,6 @@ function animate() {
         }
     }
 
-    if (projectiles[0]) {
-        if (projectiles[0].detectCollision(asteroidList[0])) {
-            console.log('collision!');
-        }    
-    }
-
     player.sprite.tint = newTint;
 
     // Calculate player projectiles

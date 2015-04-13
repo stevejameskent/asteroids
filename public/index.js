@@ -4,6 +4,9 @@ var BASE_PROJECTILE_SPEED = 5;
 var MAX_SPEED = 15;
 var MAX_PROJECTILE_DISTANCE = 650;
 
+var server_ip_address = process.env.OPENSHIFT_NODEJS_IP || '127.0.0.1'
+var server_port = OPENSHIFT_NODEJS_PORT || 8080;
+
 var stage = new PIXI.Stage(0x212226);
 var renderer = PIXI.autoDetectRenderer(1024, 768, {antialias: true});
 
@@ -13,7 +16,8 @@ var jetOn = false;
 var rotate = 'none';
 
 var projectiles = [];
-var projectileTexture = PIXI.Texture.fromImage("http://localhost:8080/bullet.png");
+var projectileTexture = PIXI.Texture.fromImage("http://" + server_ip_address + "/bullet.png");
+console.log("http://" + server_ip_address + "/bullet.png");
 
 document.onkeydown = function(e) {
     if (e.keyCode === 38) {
@@ -71,7 +75,7 @@ requestAnimFrame(animate);
 // Largest asteroid 
 // Aspect ratio (H/W)
 // 1.11773
-var asteroidTexture1 = PIXI.Texture.fromImage("http://localhost:8080/asteroid1.png", true, PIXI.scaleModes.NEAREST);
+var asteroidTexture1 = PIXI.Texture.fromImage("http://" + server_ip_address + "/asteroid1.png", true, PIXI.scaleModes.NEAREST);
 var asteroid1 = new Rectangle(asteroidTexture1, 0.5, 0.5, 300, 300, 175, (175 / 1.11773));
 
 // Second largest asteroid 

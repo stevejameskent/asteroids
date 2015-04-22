@@ -16,7 +16,7 @@ var jetOn = false;
 var rotate = 'none';
 
 var projectiles = [];
-var projectileTexture = PIXI.Texture.fromImage("http://" + server_ip_address + "bullet.png", true);
+var projectileTexture = PIXI.Texture.fromImage("bullet.png", true);
 
 document.onkeydown = function(e) {
     if (e.keyCode === 38) {
@@ -74,19 +74,19 @@ requestAnimFrame(animate);
 // Largest asteroid 
 // Aspect ratio (H/W)
 // 1.11773
-var asteroidTexture1 = PIXI.Texture.fromImage("http://" + server_ip_address + "asteroid1.png", true, PIXI.scaleModes.NEAREST);
+var asteroidTexture1 = PIXI.Texture.fromImage("asteroid1.png", true, PIXI.scaleModes.NEAREST);
 var asteroid1 = new Rectangle(asteroidTexture1, 0.5, 0.5, 300, 300, 175, (175 / 1.11773));
 
 // Second largest asteroid 
 // Aspect ratio (H/W)
 // 1.048338
-var asteroidTexture2 = PIXI.Texture.fromImage("http://" + server_ip_address + "asteroid2.png", true, PIXI.scaleModes.NEAREST);
+var asteroidTexture2 = PIXI.Texture.fromImage("asteroid2.png", true, PIXI.scaleModes.NEAREST);
 var asteroid2 = new Rectangle(asteroidTexture2, 0.5, 0.5, 700, 300, 95, (95 / 1.048338));
 
 // Smallest asteroid 
 // Aspect ratio (H/W)
 // 1.128
-var asteroidTexture3 = PIXI.Texture.fromImage("http://" + server_ip_address + "asteroid3.png", true, PIXI.scaleModes.NEAREST);
+var asteroidTexture3 = PIXI.Texture.fromImage("asteroid3.png", true, PIXI.scaleModes.NEAREST);
 var asteroid3 = new Rectangle(asteroidTexture3, 0.5, 0.5, 700, 500, 30, (30 / 1.048338));
 
 var asteroidList = [asteroid1, asteroid2, asteroid3];
@@ -94,9 +94,9 @@ var asteroidList = [asteroid1, asteroid2, asteroid3];
 // Player aspect ratio (H/W)
 // 1.33075
 // var texture = PIXI.Texture.fromImage("http://i.imgur.com/OWPBJeS.png", true, PIXI.scaleModes.NEAREST);
-var texture = PIXI.Texture.fromImage("http://" + server_ip_address + "player.png", true);
+var texture = PIXI.Texture.fromImage("player.png", true);
 // var textureJet = PIXI.Texture.fromImage("http://i.imgur.com/q30dfSV.png", true, PIXI.scaleModes.NEAREST);
-var textureJet = PIXI.Texture.fromImage("http://" + server_ip_address + "playerjet.png", true, PIXI.scaleModes.NEAREST);
+var textureJet = PIXI.Texture.fromImage("playerjet.png", true, PIXI.scaleModes.NEAREST);
 var player = new Triangle(texture, 0.5, 0.6, 1024/2, 768/2, 60, 60 / 1.33075);
 var playerRight = new Triangle(texture, 0.5, 0.6, 1024/2, 768/2, 60, 60 / 1.33075);
 var playerLeft = new Triangle(texture, 0.5, 0.6, 1024/2, 768/2, 60, 60 / 1.33075);

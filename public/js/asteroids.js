@@ -4,11 +4,15 @@ var BASE_PROJECTILE_SPEED = 5;
 var MAX_SPEED = 15;
 var MAX_PROJECTILE_DISTANCE = 650;
 
+var pixelRatio = window.devicePixelRatio;
+var WINDOW_WIDTH = (window.innerWidth / (1.35 * pixelRatio));
+var WINDOW_HEIGHT = (window.innerHeight / (1.35 * pixelRatio));
+
 var server_ip_address = "asteroids-cherrycoke.rhcloud.com/";
 // var server_port = OPENSHIFT_NODEJS_PORT || 8080;
 
 var stage = new PIXI.Stage(0x212226);
-var renderer = PIXI.autoDetectRenderer(1024, 768, {antialias: true});
+var renderer = PIXI.autoDetectRenderer(WINDOW_WIDTH, WINDOW_HEIGHT, {antialias: false, resolution: pixelRatio});
 
 document.body.appendChild(renderer.view);
 
@@ -16,7 +20,7 @@ var jetOn = false;
 var rotate = 'none';
 
 var projectiles = [];
-var projectileTexture = PIXI.Texture.fromImage("bullet.png", true);
+var projectileTexture = PIXI.Texture.fromImage("../resources/images/bullet.png", true);
 
 document.onkeydown = function(e) {
     if (e.keyCode === 38) {
@@ -71,32 +75,38 @@ var speedY = 0;
 
 requestAnimFrame(animate);
 
+var pixelationFilter = new PIXI.PixelateFilter();
+
 // Largest asteroid 
 // Aspect ratio (H/W)
 // 1.11773
-var asteroidTexture1 = PIXI.Texture.fromImage("asteroid1.png", true, PIXI.scaleModes.NEAREST);
-var asteroid1 = new Rectangle(asteroidTexture1, 0.5, 0.5, 300, 300, 175, (175 / 1.11773));
+var asteroidWidthRatio = .2;
+var asteroidTexture1 = PIXI.Texture.fromImage("../resources/images/asteroid1.png", true, PIXI.scaleModes.LINEAR);
+var width = WINDOW_WIDTH * asteroidWidthRatio;
+var height = width / 1.11773;
+var asteroid1 = new Rectangle(asteroidTexture1, 0.5, 0.5, 100, 100, width, height);
 
-// Second largest asteroid 
+// Second largest asteroid
 // Aspect ratio (H/W)
 // 1.048338
-var asteroidTexture2 = PIXI.Texture.fromImage("asteroid2.png", true, PIXI.scaleModes.NEAREST);
-var asteroid2 = new Rectangle(asteroidTexture2, 0.5, 0.5, 700, 300, 95, (95 / 1.048338));
+asteroidWidthRatio = .1;
+var asteroidTexture2 = PIXI.Texture.fromImage("../resources/images/asteroid2.png", true, PIXI.scaleModes.NEAREST);
+width = WINDOW_WIDTH * asteroidWidthRatio;
+height = width / 1.048338;
+var asteroid2 = new Rectangle(asteroidTexture2, 0.5, 0.5, 350, 100, width, height);
 
-// Smallest asteroid 
+// Smallest asteroid
 // Aspect ratio (H/W)
 // 1.128
-var asteroidTexture3 = PIXI.Texture.fromImage("asteroid3.png", true, PIXI.scaleModes.NEAREST);
-var asteroid3 = new Rectangle(asteroidTexture3, 0.5, 0.5, 700, 500, 30, (30 / 1.048338));
+var asteroidTexture3 = PIXI.Texture.fromImage("../resources/images/asteroid3.png", true, PIXI.scaleModes.NEAREST);
+var asteroid3 = new Rectangle(asteroidTexture3, 0.5, 0.5, 250, 150, 30, (30 / 1.048338));
 
 var asteroidList = [asteroid1, asteroid2, asteroid3];
 
 // Player aspect ratio (H/W)
 // 1.33075
-// var texture = PIXI.Texture.fromImage("http://i.imgur.com/OWPBJeS.png", true, PIXI.scaleModes.NEAREST);
-var texture = PIXI.Texture.fromImage("player.png", true);
-// var textureJet = PIXI.Texture.fromImage("http://i.imgur.com/q30dfSV.png", true, PIXI.scaleModes.NEAREST);
-var textureJet = PIXI.Texture.fromImage("playerjet.png", true, PIXI.scaleModes.NEAREST);
+var texture = PIXI.Texture.fromImage("../resources/images/player.png", true);
+var textureJet = PIXI.Texture.fromImage("../resources/images/playerjet.png", true, PIXI.scaleModes.NEAREST);
 var player = new Triangle(texture, 0.5, 0.6, 1024/2, 768/2, 60, 60 / 1.33075);
 var playerRight = new Triangle(texture, 0.5, 0.6, 1024/2, 768/2, 60, 60 / 1.33075);
 var playerLeft = new Triangle(texture, 0.5, 0.6, 1024/2, 768/2, 60, 60 / 1.33075);

@@ -1,5 +1,10 @@
+var pixelationFilter = new PIXI.PixelateFilter();
+pixelationFilter.size = {x: 1, y: 1};
+
 var Rectangle = function(texture, anchorX, anchorY, x, y, height, width) {
     this.sprite = new PIXI.Sprite(texture);
+    this.sprite.filters = [pixelationFilter];
+    this.sprite.filters[0].size = {x: 1, y: 1};
     this.sprite.anchor.x = anchorX;
     this.sprite.anchor.y = anchorY;
     
@@ -52,7 +57,6 @@ var Rectangle = function(texture, anchorX, anchorY, x, y, height, width) {
     };
 
     this.detectCollision = detectCollision.bind(this);
-
     this.detectCollisionAxis = detectCollisionAxis.bind(this);
     
     stage.addChild(this.sprite);

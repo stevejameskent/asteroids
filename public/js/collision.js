@@ -7,13 +7,13 @@ var detectCollision = function(box2) {
     
     for (var i = 0; i < this.normals.length; i++) {
         if (!(this.detectCollisionAxis(this.normals[i], box2))) {
-            return false;   
+            return false;
         }
     }
     
     for (var j = 0; j < box2.normals.length; j++) {
         if (!(this.detectCollisionAxis(box2.normals[j], box2))) {
-            return false;   
+            return false;
         }
     }
     
@@ -25,7 +25,7 @@ var detectCollisionAxis = function(axis, box2) {
     var minProjBox1 = this.corners[0].calcDot(axis);
     var maxProjBox2 = box2.corners[0].calcDot(axis);
     var minProjBox2 = box2.corners[0].calcDot(axis);
-        
+
     for (var i = 1; i < this.corners.length; i++) {
         var newProj = this.corners[i].calcDot(axis);
         if (newProj > maxProjBox1) {

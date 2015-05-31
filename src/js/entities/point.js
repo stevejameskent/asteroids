@@ -14,3 +14,5 @@ var Point = function(x, y) {
         return new Point(point2.x - this.x, point2.y - this.y);  
     };
 };
+
+module.exports = Point;

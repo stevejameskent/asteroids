@@ -1,31 +1,27 @@
-var Projectile = function(texture) {
-    var projectileSpeeds = calcProjectileSpeed(player.sprite.rotation - (0.5 * Math.PI));
-    this.speedX = projectileSpeeds.projectileSpeedX;
-    this.speedY = projectileSpeeds.projectileSpeedY;
+'use strict';
 
-    this.totalDistance = 0;
+var Point = require('./point');
 
+// var pixelationFilter = new PIXI.filters.PixelateFilter();
+
+var Rectangle = function(texture, anchorX, anchorY, x, y, height, width) {
     this.sprite = new PIXI.Sprite(texture);
-
-    this.calcDistance = function() {
-        var distance = Math.sqrt((this.speedX * this.speedX) + (this.speedY * this.speedX));
-        return Math.sqrt((this.speedX * this.speedX) + (this.speedY * this.speedY));
-    };
-
-    this.sprite.anchor.x = 0.5;
-    this.sprite.anchor.y = 0.5;
-
-    this.sprite.position.x = (player.sprite.position.x) + (.6 * player.sprite.height) * Math.sin(player.sprite.rotation);
-    this.sprite.position.y = (player.sprite.position.y) - (.6 * player.sprite.height) * Math.cos(player.sprite.rotation);
-
-    this.sprite.height = 5;
-    this.sprite.width = 5;
-
+    // this.sprite.filters = [pixelationFilter];
+    // this.sprite.filters[0].size = {x: 1, y: 1};
+    this.sprite.anchor.x = anchorX;
+    this.sprite.anchor.y = anchorY;
+    
+    this.sprite.position.x = x;
+    this.sprite.position.y = y;
+    
+    this.sprite.height = height;
+    this.sprite.width = width;
+    
     this.lateral = Math.sqrt((this.sprite.height / 2 * this.sprite.height / 2) + (this.sprite.width / 2 * this.sprite.width / 2));
     
     this.corners = [];
     this.normals = [];
-
+    
     this.getCorners = function() {
         this.corners = [];
         
@@ -64,8 +60,9 @@ var Projectile = function(texture) {
     };
 
     this.detectCollision = detectCollision.bind(this);
-
     this.detectCollisionAxis = detectCollisionAxis.bind(this);
     
-    stage.addChild(this.sprite);
+    Stage.addEntity(this.sprite);
 };
+
+module.exports = Rectangle;

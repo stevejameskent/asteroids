@@ -1,26 +1,25 @@
+'use strict';
+
+global.Stage = require('./entities/stage');
+var Point = require('./entities/point');
+var Projectile = require('./entities/projectile');
+var Rectangle = require('./entities/rectangle');
+var Triangle = require('./entities/triangle');
+
 var ROTATION_SPEED = .042;
 var BASE_ACCELERATION = .12;
 var BASE_PROJECTILE_SPEED = 5;
 var MAX_SPEED = 15;
 var MAX_PROJECTILE_DISTANCE = 650;
 
-var pixelRatio = window.devicePixelRatio;
-var WINDOW_WIDTH = (window.innerWidth / (1.35 * pixelRatio));
-var WINDOW_HEIGHT = (window.innerHeight / (1.35 * pixelRatio));
-
 var server_ip_address = "asteroids-cherrycoke.rhcloud.com/";
 // var server_port = OPENSHIFT_NODEJS_PORT || 8080;
-
-var stage = new PIXI.Stage(0x212226);
-var renderer = PIXI.autoDetectRenderer(WINDOW_WIDTH, WINDOW_HEIGHT, {antialias: false, resolution: pixelRatio});
-
-document.body.appendChild(renderer.view);
 
 var jetOn = false;
 var rotate = 'none';
 
 var projectiles = [];
-var projectileTexture = PIXI.Texture.fromImage("../resources/images/bullet.png", true);
+var projectileTexture = PIXI.Texture.fromImage("resources/images/bullet.png", true);
 
 document.onkeydown = function(e) {
     if (e.keyCode === 38) {
@@ -60,80 +59,69 @@ var calcAcceleration = function(angle) {
     };
 };
 
-var calcProjectileSpeed = function(angle) {
-    var projectileSpeedX = BASE_PROJECTILE_SPEED * Math.cos(angle);
-    var projectileSpeedY = BASE_PROJECTILE_SPEED * Math.sin(angle);
-
-    return {
-        'projectileSpeedX': projectileSpeedX,
-        'projectileSpeedY': projectileSpeedY
-    };
-};
-
 var speedX = 0;
 var speedY = 0;
 
-requestAnimFrame(animate);
-
-var pixelationFilter = new PIXI.PixelateFilter();
+requestAnimationFrame(animate);
 
 // Largest asteroid 
 // Aspect ratio (H/W)
 // 1.11773
-var asteroidWidthRatio = .2;
-var asteroidTexture1 = PIXI.Texture.fromImage("../resources/images/asteroid1.png", true, PIXI.scaleModes.LINEAR);
-var width = WINDOW_WIDTH * asteroidWidthRatio;
+var asteroidWidthRatio = .2 / 2;
+var asteroidTexture1 = PIXI.Texture.fromImage("resources/images/asteroid1@2x.png", true, PIXI.scaleModes.LINEAR);
+var width = Stage.width * asteroidWidthRatio;
 var height = width / 1.11773;
-var asteroid1 = new Rectangle(asteroidTexture1, 0.5, 0.5, 100, 100, width, height);
+var asteroid1 = new Rectangle(asteroidTexture1, 0.5, 0.5, 50, 50, width, height);
+asteroid1.sprite.resolution = 4;
 
 // Second largest asteroid
 // Aspect ratio (H/W)
 // 1.048338
 asteroidWidthRatio = .1;
-var asteroidTexture2 = PIXI.Texture.fromImage("../resources/images/asteroid2.png", true, PIXI.scaleModes.NEAREST);
-width = WINDOW_WIDTH * asteroidWidthRatio;
+var asteroidTexture2 = PIXI.Texture.fromImage("resources/images/asteroid2.png", true, PIXI.scaleModes.NEAREST);
+width = Stage.width * asteroidWidthRatio;
 height = width / 1.048338;
 var asteroid2 = new Rectangle(asteroidTexture2, 0.5, 0.5, 350, 100, width, height);
 
 // Smallest asteroid
 // Aspect ratio (H/W)
 // 1.128
-var asteroidTexture3 = PIXI.Texture.fromImage("../resources/images/asteroid3.png", true, PIXI.scaleModes.NEAREST);
+var asteroidTexture3 = PIXI.Texture.fromImage("resources/images/asteroid3.png", true, PIXI.scaleModes.NEAREST);
 var asteroid3 = new Rectangle(asteroidTexture3, 0.5, 0.5, 250, 150, 30, (30 / 1.048338));
 
 var asteroidList = [asteroid1, asteroid2, asteroid3];
 
 // Player aspect ratio (H/W)
 // 1.33075
-var texture = PIXI.Texture.fromImage("../resources/images/player.png", true);
-var textureJet = PIXI.Texture.fromImage("../resources/images/playerjet.png", true, PIXI.scaleModes.NEAREST);
-var player = new Triangle(texture, 0.5, 0.6, 1024/2, 768/2, 60, 60 / 1.33075);
-var playerRight = new Triangle(texture, 0.5, 0.6, 1024/2, 768/2, 60, 60 / 1.33075);
-var playerLeft = new Triangle(texture, 0.5, 0.6, 1024/2, 768/2, 60, 60 / 1.33075);
-var playerTop = new Triangle(texture, 0.5, 0.6, 1024/2, 768/2, 60, 60 / 1.33075);
-var playerBottom = new Triangle(texture, 0.5, 0.6, 1024/2, 768/2, 60, 60 / 1.33075);
+var texture = PIXI.Texture.fromImage("resources/images/player.png", true);
+var textureJet = PIXI.Texture.fromImage("resources/images/playerjet.png", true, PIXI.scaleModes.NEAREST);
+var player = new Triangle(texture, 0.5, 0.6, Stage.width / 2, Stage.height / 2, 60, 60 / 1.33075);
+var playerRight = new Triangle(texture, 0.5, 0.6, Stage.width / 2, Stage.height / 2, 60, 60 / 1.33075);
+var playerLeft = new Triangle(texture, 0.5, 0.6, Stage.width / 2, Stage.height / 2, 60, 60 / 1.33075);
+var playerTop = new Triangle(texture, 0.5, 0.6, Stage.width / 2, Stage.height / 2, 60, 60 / 1.33075);
+var playerBottom = new Triangle(texture, 0.5, 0.6, Stage.width / 2, Stage.height / 2, 60, 60 / 1.33075);
 
 player.sprite.tint = playerRight.sprite.tint = playerLeft.sprite.tint = playerTop.sprite.tint = playerBottom.sprite.tint = 16777215;
 
 function animate() {
-    requestAnimFrame(animate);
+    requestAnimationFrame(animate);
     
     if (jetOn) {
-        player.sprite.setTexture(textureJet);
-        playerRight.sprite.setTexture(textureJet);
-        playerLeft.sprite.setTexture(textureJet);
-        playerTop.sprite.setTexture(textureJet);
-        playerBottom.sprite.setTexture(textureJet);
+        player.sprite.texture = textureJet;
+        playerRight.sprite.texture = textureJet;
+        playerLeft.sprite.texture = textureJet;
+        playerTop.sprite.texture = textureJet;
+        playerBottom.sprite.texture = textureJet;
 
         var magnitudes = calcAcceleration(player.sprite.rotation - (0.5 * Math.PI));
         speedX += magnitudes.accelerationX;
         speedY += magnitudes.accelerationY;
     } else {
-        player.sprite.setTexture(texture);
-        playerRight.sprite.setTexture(texture);
-        playerLeft.sprite.setTexture(texture);
-        playerTop.sprite.setTexture(texture);
-        playerBottom.sprite.setTexture(texture);
+        player.sprite.texture = texture;
+        playerRight.sprite.texture = texture;
+        playerLeft.sprite.texture = texture;
+        playerTop.sprite.texture = texture;
+        playerBottom.sprite.texture = texture;
     }
 
     if (player.sprite.rotation > 2 * Math.PI) {
@@ -240,11 +228,11 @@ function animate() {
                 currentProjectile.sprite.position.y += 768;
             }
         } else {
-            stage.removeChild(currentProjectile.sprite);
+            Stage.removeEntity(currentProjectile.sprite);
             projectiles.splice(i, 1);
             i -= 1;
         }
     }
     
-    renderer.render(stage);
+    Stage.draw();
 };

@@ -1,3 +1,5 @@
+var Point = require('./point');
+
 var Triangle = function(texture, anchorX, anchorY, x, y, height, width) {
     this.sprite = new PIXI.Sprite(texture);
     this.sprite.anchor.x = anchorX;
@@ -12,7 +14,7 @@ var Triangle = function(texture, anchorX, anchorY, x, y, height, width) {
     this.corners = [];
     this.normals = [];
     
-    this.c = Math.sqrt((.4*this.sprite.height * .4*this.sprite.height) + (.5*this.sprite.width * .5*this.sprite.width));
+    this.c = Math.sqrt((.4 * this.sprite.height * .4 * this.sprite.height) + (.5 * this.sprite.width * .5 * this.sprite.width));
     
     this.phi = Math.acos((.4 * this.sprite.height) / this.c);
     
@@ -50,8 +52,9 @@ var Triangle = function(texture, anchorX, anchorY, x, y, height, width) {
     };
 
     this.detectCollision = detectCollision.bind(this);
-
     this.detectCollisionAxis = detectCollisionAxis.bind(this);
 
-    stage.addChild(this.sprite);
+    Stage.addEntity(this.sprite);
 };
+
+module.exports = Triangle;

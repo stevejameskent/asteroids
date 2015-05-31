@@ -47,3 +47,8 @@ var detectCollisionAxis = function(axis, box2) {
         
     return (maxProjBox2 < minProjBox1 || maxProjBox1 > minProjBox2);
 };
+
+module.exports = {
+    detectCollision: detectCollision,
+    detectCollisionAxis: detectCollisionAxis
+};

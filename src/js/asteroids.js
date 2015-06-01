@@ -6,12 +6,6 @@ var Projectile = require('./entities/projectile');
 var Rectangle = require('./entities/rectangle');
 var Triangle = require('./entities/triangle');
 
-var ROTATION_SPEED = .042;
-var BASE_ACCELERATION = .12;
-var BASE_PROJECTILE_SPEED = 5;
-var MAX_SPEED = 15;
-var MAX_PROJECTILE_DISTANCE = 650;
-
 var server_ip_address = "asteroids-cherrycoke.rhcloud.com/";
 // var server_port = OPENSHIFT_NODEJS_PORT || 8080;
 
@@ -44,14 +38,14 @@ document.onkeyup = function(e) {
         rotate = 'none';
     }
     if (e.keyCode === 32) {
-        var projectile = new Projectile(projectileTexture);
+        var projectile = new Projectile(projectileTexture, player);
         projectiles.push(projectile);
     }
 };
 
 var calcAcceleration = function(angle) {
-    var accelerationX = BASE_ACCELERATION * Math.cos(angle);
-    var accelerationY = BASE_ACCELERATION * Math.sin(angle);
+    var accelerationX = +Constants.BASE_ACCELERATION * Math.cos(angle);
+    var accelerationY = +Constants.BASE_ACCELERATION * Math.sin(angle);
 
     return {
         'accelerationX': accelerationX,
@@ -67,27 +61,29 @@ requestAnimationFrame(animate);
 // Largest asteroid 
 // Aspect ratio (H/W)
 // 1.11773
-var asteroidWidthRatio = .2 / 2;
+var asteroidWidthRatio = .17;
 var asteroidTexture1 = PIXI.Texture.fromImage("resources/images/asteroid1@2x.png", true, PIXI.scaleModes.LINEAR);
 var width = Stage.width * asteroidWidthRatio;
 var height = width / 1.11773;
-var asteroid1 = new Rectangle(asteroidTexture1, 0.5, 0.5, 50, 50, width, height);
-asteroid1.sprite.resolution = 4;
+var asteroid1 = new Rectangle(asteroidTexture1, 0.5, 0.5, .25 * Stage.width, .25 * Stage.height, width, height);
 
 // Second largest asteroid
 // Aspect ratio (H/W)
 // 1.048338
-asteroidWidthRatio = .1;
+asteroidWidthRatio = .08;
 var asteroidTexture2 = PIXI.Texture.fromImage("resources/images/asteroid2.png", true, PIXI.scaleModes.NEAREST);
 width = Stage.width * asteroidWidthRatio;
 height = width / 1.048338;
-var asteroid2 = new Rectangle(asteroidTexture2, 0.5, 0.5, 350, 100, width, height);
+var asteroid2 = new Rectangle(asteroidTexture2, 0.5, 0.5, .75 * Stage.width, .25 * Stage.height, width, height);
 
 // Smallest asteroid
 // Aspect ratio (H/W)
 // 1.128
+asteroidWidthRatio = .02929;
 var asteroidTexture3 = PIXI.Texture.fromImage("resources/images/asteroid3.png", true, PIXI.scaleModes.NEAREST);
-var asteroid3 = new Rectangle(asteroidTexture3, 0.5, 0.5, 250, 150, 30, (30 / 1.048338));
+width = Stage.width * asteroidWidthRatio;
+height = width / 1.128;
+var asteroid3 = new Rectangle(asteroidTexture3, 0.5, 0.5, .5 * Stage.width, .75 * Stage.height, width, height);
 
 var asteroidList = [asteroid1, asteroid2, asteroid3];
 
@@ -132,57 +128,57 @@ function animate() {
     }
 
     if (rotate === 'right') {
-        player.sprite.rotation += ROTATION_SPEED;
+        player.sprite.rotation += +Constants.PLAYER_ROTATION_SPEED;
         playerRight.sprite.rotation = player.sprite.rotation
         playerLeft.sprite.rotation = player.sprite.rotation
         playerTop.sprite.rotation = player.sprite.rotation
         playerBottom.sprite.rotation = player.sprite.rotation    
     }
     if (rotate === 'left') {
-        player.sprite.rotation -= ROTATION_SPEED;
+        player.sprite.rotation -= +Constants.PLAYER_ROTATION_SPEED;
         playerRight.sprite.rotation = player.sprite.rotation
         playerLeft.sprite.rotation = player.sprite.rotation
         playerTop.sprite.rotation = player.sprite.rotation
         playerBottom.sprite.rotation = player.sprite.rotation
     }
 
-    if (speedX > MAX_SPEED) {
-        speedX = MAX_SPEED;
+    if (speedX > Constants.MAX_SPEED) {
+        speedX = Constants.MAX_SPEED;
     }
-    if (speedX < -1 * MAX_SPEED) {
-        speedX = -1 * MAX_SPEED;
+    if (speedX < -1 * Constants.MAX_SPEED) {
+        speedX = -1 * Constants.MAX_SPEED;
     }
-    if (speedY > MAX_SPEED) {
-        speedY = MAX_SPEED;
+    if (speedY > Constants.MAX_SPEED) {
+        speedY = Constants.MAX_SPEED;
     }
-    if (speedY < -1 * MAX_SPEED) {
-        speedY = -1 * MAX_SPEED;
+    if (speedY < -1 * Constants.MAX_SPEED) {
+        speedY = -1 * Constants.MAX_SPEED;
     }
 
     player.sprite.position.x += speedX;
     player.sprite.position.y += speedY;
 
-    if (player.sprite.position.x > 1024) {
-        player.sprite.position.x -= 1024;
+    if (player.sprite.position.x > Stage.width) {
+        player.sprite.position.x -= Stage.width;
     }
     if (player.sprite.position.x < 0) {
-        player.sprite.position.x += 1024;
+        player.sprite.position.x += Stage.width;
     }
     if (player.sprite.position.y < 0) {
-        player.sprite.position.y += 768;
+        player.sprite.position.y += Stage.height;
     }
-    if (player.sprite.position.y > 768) {
-        player.sprite.position.y -= 768
+    if (player.sprite.position.y > Stage.height) {
+        player.sprite.position.y -= Stage.height
     }
 
-    playerRight.sprite.position.x = player.sprite.position.x - 1024;
+    playerRight.sprite.position.x = player.sprite.position.x - Stage.width;
     playerRight.sprite.position.y = player.sprite.position.y;
-    playerLeft.sprite.position.x = player.sprite.position.x + 1024;
+    playerLeft.sprite.position.x = player.sprite.position.x + Stage.width;
     playerLeft.sprite.position.y = player.sprite.position.y;
     playerTop.sprite.position.x = player.sprite.position.x;
-    playerTop.sprite.position.y = player.sprite.position.y - 768;
+    playerTop.sprite.position.y = player.sprite.position.y - Stage.height;
     playerBottom.sprite.position.x = player.sprite.position.x;
-    playerBottom.sprite.position.y = player.sprite.position.y + 768;
+    playerBottom.sprite.position.y = player.sprite.position.y + Stage.height;
 
     for (var k = 0; k < projectiles.length; k++) {
         projectiles[k].sprite.tint = 16777215;
@@ -210,22 +206,22 @@ function animate() {
     // Calculate player projectiles
     for (var i = 0; i < projectiles.length; i++) {
         var currentProjectile = projectiles[i];
-        if (currentProjectile.totalDistance < MAX_PROJECTILE_DISTANCE) {
+        if (currentProjectile.totalDistance < Constants.MAX_PROJECTILE_DISTANCE) {
             currentProjectile.sprite.position.x += currentProjectile.speedX;
             currentProjectile.sprite.position.y += currentProjectile.speedY;
             currentProjectile.totalDistance += currentProjectile.calcDistance();
 
-            if (currentProjectile.sprite.position.x > 1024) {
-                currentProjectile.sprite.position.x -= 1024;
+            if (currentProjectile.sprite.position.x > Stage.width) {
+                currentProjectile.sprite.position.x -= Stage.width;
             }
             if (currentProjectile.sprite.position.x < 0) {
-                currentProjectile.sprite.position.x += 1024;
+                currentProjectile.sprite.position.x += Stage.width;
             }
-            if (currentProjectile.sprite.position.y > 768) {
-                currentProjectile.sprite.position.y -= 768;
+            if (currentProjectile.sprite.position.y > Stage.height) {
+                currentProjectile.sprite.position.y -= Stage.height;
             }
             if (currentProjectile.sprite.position.y < 0) {
-                currentProjectile.sprite.position.y += 768;
+                currentProjectile.sprite.position.y += Stage.height;
             }
         } else {
             Stage.removeEntity(currentProjectile.sprite);

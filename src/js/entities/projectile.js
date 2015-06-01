@@ -1,8 +1,8 @@
 var Point = require('./point');
 
 var calcProjectileSpeed = function(angle) {
-    var projectileSpeedX = BASE_PROJECTILE_SPEED * Math.cos(angle);
-    var projectileSpeedY = BASE_PROJECTILE_SPEED * Math.sin(angle);
+    var projectileSpeedX = Constants.BASE_PROJECTILE_SPEED * Math.cos(angle);
+    var projectileSpeedY = Constants.BASE_PROJECTILE_SPEED * Math.sin(angle);
 
     return {
         'projectileSpeedX': projectileSpeedX,
@@ -10,7 +10,7 @@ var calcProjectileSpeed = function(angle) {
     };
 };
 
-var Projectile = function(texture) {
+var Projectile = function(texture, player) {
     var projectileSpeeds = calcProjectileSpeed(player.sprite.rotation - (0.5 * Math.PI));
     this.speedX = projectileSpeeds.projectileSpeedX;
     this.speedY = projectileSpeeds.projectileSpeedY;
@@ -30,8 +30,9 @@ var Projectile = function(texture) {
     this.sprite.position.x = (player.sprite.position.x) + (.6 * player.sprite.height) * Math.sin(player.sprite.rotation);
     this.sprite.position.y = (player.sprite.position.y) - (.6 * player.sprite.height) * Math.cos(player.sprite.rotation);
 
-    this.sprite.height = 5;
-    this.sprite.width = 5;
+    var projectileWidthRatio = .0048828;
+    this.sprite.height = Stage.width * projectileWidthRatio;
+    this.sprite.width = Stage.width * projectileWidthRatio;
 
     this.lateral = Math.sqrt((this.sprite.height / 2 * this.sprite.height / 2) + (this.sprite.width / 2 * this.sprite.width / 2));
     

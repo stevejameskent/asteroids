@@ -1125,7 +1125,7 @@
 }());
 
 }).call(this,require('_process'))
-},{"_process":131}],2:[function(require,module,exports){
+},{"_process":132}],2:[function(require,module,exports){
 'use strict';
 
 module.exports = earcut;
@@ -2534,7 +2534,7 @@ Loader.LOAD_TYPE = Resource.LOAD_TYPE;
 Loader.XHR_READY_STATE = Resource.XHR_READY_STATE;
 Loader.XHR_RESPONSE_TYPE = Resource.XHR_RESPONSE_TYPE;
 
-},{"./Resource":6,"async":1,"eventemitter3":3,"url":136}],6:[function(require,module,exports){
+},{"./Resource":6,"async":1,"eventemitter3":3,"url":137}],6:[function(require,module,exports){
 var EventEmitter = require('eventemitter3'),
     _url = require('url'),
     // tests is CORS is supported in XHR, if not we need to use XDR
@@ -3306,7 +3306,7 @@ function setExtMap(map, extname, val) {
     map[extname] = val;
 }
 
-},{"eventemitter3":3,"url":136}],7:[function(require,module,exports){
+},{"eventemitter3":3,"url":137}],7:[function(require,module,exports){
 module.exports = {
 
     // private property
@@ -23292,7 +23292,7 @@ module.exports = function ()
     };
 };
 
-},{"../core":19,"../core/utils":66,"../extras":75,"path":130,"resource-loader":8}],111:[function(require,module,exports){
+},{"../core":19,"../core/utils":66,"../extras":75,"path":131,"resource-loader":8}],111:[function(require,module,exports){
 /**
  * @file        Main export of the PIXI loaders library
  * @author      Mat Groves <mat@goodboydigital.com>
@@ -23458,7 +23458,7 @@ module.exports = function ()
     };
 };
 
-},{"../core":19,"path":130,"resource-loader":8}],114:[function(require,module,exports){
+},{"../core":19,"path":131,"resource-loader":8}],114:[function(require,module,exports){
 var core = require('../core');
 
 module.exports = function ()
@@ -24510,12 +24510,6 @@ var Projectile = require('./entities/projectile');
 var Rectangle = require('./entities/rectangle');
 var Triangle = require('./entities/triangle');
 
-var ROTATION_SPEED = .042;
-var BASE_ACCELERATION = .12;
-var BASE_PROJECTILE_SPEED = 5;
-var MAX_SPEED = 15;
-var MAX_PROJECTILE_DISTANCE = 650;
-
 var server_ip_address = "asteroids-cherrycoke.rhcloud.com/";
 // var server_port = OPENSHIFT_NODEJS_PORT || 8080;
 
@@ -24548,14 +24542,14 @@ document.onkeyup = function(e) {
         rotate = 'none';
     }
     if (e.keyCode === 32) {
-        var projectile = new Projectile(projectileTexture);
+        var projectile = new Projectile(projectileTexture, player);
         projectiles.push(projectile);
     }
 };
 
 var calcAcceleration = function(angle) {
-    var accelerationX = BASE_ACCELERATION * Math.cos(angle);
-    var accelerationY = BASE_ACCELERATION * Math.sin(angle);
+    var accelerationX = +Constants.BASE_ACCELERATION * Math.cos(angle);
+    var accelerationY = +Constants.BASE_ACCELERATION * Math.sin(angle);
 
     return {
         'accelerationX': accelerationX,
@@ -24571,27 +24565,29 @@ requestAnimationFrame(animate);
 // Largest asteroid 
 // Aspect ratio (H/W)
 // 1.11773
-var asteroidWidthRatio = .2 / 2;
+var asteroidWidthRatio = .17;
 var asteroidTexture1 = PIXI.Texture.fromImage("resources/images/asteroid1@2x.png", true, PIXI.scaleModes.LINEAR);
 var width = Stage.width * asteroidWidthRatio;
 var height = width / 1.11773;
-var asteroid1 = new Rectangle(asteroidTexture1, 0.5, 0.5, 50, 50, width, height);
-asteroid1.sprite.resolution = 4;
+var asteroid1 = new Rectangle(asteroidTexture1, 0.5, 0.5, .25 * Stage.width, .25 * Stage.height, width, height);
 
 // Second largest asteroid
 // Aspect ratio (H/W)
 // 1.048338
-asteroidWidthRatio = .1;
+asteroidWidthRatio = .08;
 var asteroidTexture2 = PIXI.Texture.fromImage("resources/images/asteroid2.png", true, PIXI.scaleModes.NEAREST);
 width = Stage.width * asteroidWidthRatio;
 height = width / 1.048338;
-var asteroid2 = new Rectangle(asteroidTexture2, 0.5, 0.5, 350, 100, width, height);
+var asteroid2 = new Rectangle(asteroidTexture2, 0.5, 0.5, .75 * Stage.width, .25 * Stage.height, width, height);
 
 // Smallest asteroid
 // Aspect ratio (H/W)
 // 1.128
+asteroidWidthRatio = .02929;
 var asteroidTexture3 = PIXI.Texture.fromImage("resources/images/asteroid3.png", true, PIXI.scaleModes.NEAREST);
-var asteroid3 = new Rectangle(asteroidTexture3, 0.5, 0.5, 250, 150, 30, (30 / 1.048338));
+width = Stage.width * asteroidWidthRatio;
+height = width / 1.128;
+var asteroid3 = new Rectangle(asteroidTexture3, 0.5, 0.5, .5 * Stage.width, .75 * Stage.height, width, height);
 
 var asteroidList = [asteroid1, asteroid2, asteroid3];
 
@@ -24636,57 +24632,57 @@ function animate() {
     }
 
     if (rotate === 'right') {
-        player.sprite.rotation += ROTATION_SPEED;
+        player.sprite.rotation += +Constants.PLAYER_ROTATION_SPEED;
         playerRight.sprite.rotation = player.sprite.rotation
         playerLeft.sprite.rotation = player.sprite.rotation
         playerTop.sprite.rotation = player.sprite.rotation
         playerBottom.sprite.rotation = player.sprite.rotation    
     }
     if (rotate === 'left') {
-        player.sprite.rotation -= ROTATION_SPEED;
+        player.sprite.rotation -= +Constants.PLAYER_ROTATION_SPEED;
         playerRight.sprite.rotation = player.sprite.rotation
         playerLeft.sprite.rotation = player.sprite.rotation
         playerTop.sprite.rotation = player.sprite.rotation
         playerBottom.sprite.rotation = player.sprite.rotation
     }
 
-    if (speedX > MAX_SPEED) {
-        speedX = MAX_SPEED;
+    if (speedX > Constants.MAX_SPEED) {
+        speedX = Constants.MAX_SPEED;
     }
-    if (speedX < -1 * MAX_SPEED) {
-        speedX = -1 * MAX_SPEED;
+    if (speedX < -1 * Constants.MAX_SPEED) {
+        speedX = -1 * Constants.MAX_SPEED;
     }
-    if (speedY > MAX_SPEED) {
-        speedY = MAX_SPEED;
+    if (speedY > Constants.MAX_SPEED) {
+        speedY = Constants.MAX_SPEED;
     }
-    if (speedY < -1 * MAX_SPEED) {
-        speedY = -1 * MAX_SPEED;
+    if (speedY < -1 * Constants.MAX_SPEED) {
+        speedY = -1 * Constants.MAX_SPEED;
     }
 
     player.sprite.position.x += speedX;
     player.sprite.position.y += speedY;
 
-    if (player.sprite.position.x > 1024) {
-        player.sprite.position.x -= 1024;
+    if (player.sprite.position.x > Stage.width) {
+        player.sprite.position.x -= Stage.width;
     }
     if (player.sprite.position.x < 0) {
-        player.sprite.position.x += 1024;
+        player.sprite.position.x += Stage.width;
     }
     if (player.sprite.position.y < 0) {
-        player.sprite.position.y += 768;
+        player.sprite.position.y += Stage.height;
     }
-    if (player.sprite.position.y > 768) {
-        player.sprite.position.y -= 768
+    if (player.sprite.position.y > Stage.height) {
+        player.sprite.position.y -= Stage.height
     }
 
-    playerRight.sprite.position.x = player.sprite.position.x - 1024;
+    playerRight.sprite.position.x = player.sprite.position.x - Stage.width;
     playerRight.sprite.position.y = player.sprite.position.y;
-    playerLeft.sprite.position.x = player.sprite.position.x + 1024;
+    playerLeft.sprite.position.x = player.sprite.position.x + Stage.width;
     playerLeft.sprite.position.y = player.sprite.position.y;
     playerTop.sprite.position.x = player.sprite.position.x;
-    playerTop.sprite.position.y = player.sprite.position.y - 768;
+    playerTop.sprite.position.y = player.sprite.position.y - Stage.height;
     playerBottom.sprite.position.x = player.sprite.position.x;
-    playerBottom.sprite.position.y = player.sprite.position.y + 768;
+    playerBottom.sprite.position.y = player.sprite.position.y + Stage.height;
 
     for (var k = 0; k < projectiles.length; k++) {
         projectiles[k].sprite.tint = 16777215;
@@ -24714,22 +24710,22 @@ function animate() {
     // Calculate player projectiles
     for (var i = 0; i < projectiles.length; i++) {
         var currentProjectile = projectiles[i];
-        if (currentProjectile.totalDistance < MAX_PROJECTILE_DISTANCE) {
+        if (currentProjectile.totalDistance < Constants.MAX_PROJECTILE_DISTANCE) {
             currentProjectile.sprite.position.x += currentProjectile.speedX;
             currentProjectile.sprite.position.y += currentProjectile.speedY;
             currentProjectile.totalDistance += currentProjectile.calcDistance();
 
-            if (currentProjectile.sprite.position.x > 1024) {
-                currentProjectile.sprite.position.x -= 1024;
+            if (currentProjectile.sprite.position.x > Stage.width) {
+                currentProjectile.sprite.position.x -= Stage.width;
             }
             if (currentProjectile.sprite.position.x < 0) {
-                currentProjectile.sprite.position.x += 1024;
+                currentProjectile.sprite.position.x += Stage.width;
             }
-            if (currentProjectile.sprite.position.y > 768) {
-                currentProjectile.sprite.position.y -= 768;
+            if (currentProjectile.sprite.position.y > Stage.height) {
+                currentProjectile.sprite.position.y -= Stage.height;
             }
             if (currentProjectile.sprite.position.y < 0) {
-                currentProjectile.sprite.position.y += 768;
+                currentProjectile.sprite.position.y += Stage.height;
             }
         } else {
             Stage.removeEntity(currentProjectile.sprite);
@@ -24741,7 +24737,7 @@ function animate() {
     Stage.draw();
 };
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./entities/point":125,"./entities/projectile":126,"./entities/rectangle":127,"./entities/stage":128,"./entities/triangle":129}],124:[function(require,module,exports){
+},{"./entities/point":126,"./entities/projectile":127,"./entities/rectangle":128,"./entities/stage":129,"./entities/triangle":130}],124:[function(require,module,exports){
 var detectCollision = function(box2) {
     this.getCorners();
     box2.getCorners();
@@ -24798,6 +24794,15 @@ module.exports = {
 };
 
 },{}],125:[function(require,module,exports){
+module.exports={
+    "PLAYER_ROTATION_SPEED": ".042",
+    "BASE_ACCELERATION": ".12",
+    "BASE_PROJECTILE_SPEED": "8",
+    "MAX_SPEED": "7",
+    "MAX_PROJECTILE_DISTANCE": "650"
+}
+
+},{}],126:[function(require,module,exports){
 var Point = function(x, y) {
     this.x = x;
     this.y = y;
@@ -24817,12 +24822,12 @@ var Point = function(x, y) {
 
 module.exports = Point;
 
-},{}],126:[function(require,module,exports){
+},{}],127:[function(require,module,exports){
 var Point = require('./point');
 
 var calcProjectileSpeed = function(angle) {
-    var projectileSpeedX = BASE_PROJECTILE_SPEED * Math.cos(angle);
-    var projectileSpeedY = BASE_PROJECTILE_SPEED * Math.sin(angle);
+    var projectileSpeedX = Constants.BASE_PROJECTILE_SPEED * Math.cos(angle);
+    var projectileSpeedY = Constants.BASE_PROJECTILE_SPEED * Math.sin(angle);
 
     return {
         'projectileSpeedX': projectileSpeedX,
@@ -24830,7 +24835,7 @@ var calcProjectileSpeed = function(angle) {
     };
 };
 
-var Projectile = function(texture) {
+var Projectile = function(texture, player) {
     var projectileSpeeds = calcProjectileSpeed(player.sprite.rotation - (0.5 * Math.PI));
     this.speedX = projectileSpeeds.projectileSpeedX;
     this.speedY = projectileSpeeds.projectileSpeedY;
@@ -24850,8 +24855,9 @@ var Projectile = function(texture) {
     this.sprite.position.x = (player.sprite.position.x) + (.6 * player.sprite.height) * Math.sin(player.sprite.rotation);
     this.sprite.position.y = (player.sprite.position.y) - (.6 * player.sprite.height) * Math.cos(player.sprite.rotation);
 
-    this.sprite.height = 5;
-    this.sprite.width = 5;
+    var projectileWidthRatio = .0048828;
+    this.sprite.height = Stage.width * projectileWidthRatio;
+    this.sprite.width = Stage.width * projectileWidthRatio;
 
     this.lateral = Math.sqrt((this.sprite.height / 2 * this.sprite.height / 2) + (this.sprite.width / 2 * this.sprite.width / 2));
     
@@ -24903,7 +24909,7 @@ var Projectile = function(texture) {
 
 module.exports = Projectile;
 
-},{"./point":125}],127:[function(require,module,exports){
+},{"./point":126}],128:[function(require,module,exports){
 'use strict';
 
 var Point = require('./point');
@@ -24973,7 +24979,7 @@ var Rectangle = function(texture, anchorX, anchorY, x, y, height, width) {
 
 module.exports = Rectangle;
 
-},{"./point":125}],128:[function(require,module,exports){
+},{"./point":126}],129:[function(require,module,exports){
 'use strict';
 
 var calcStageDimensions = function() {
@@ -25028,7 +25034,7 @@ function Stage() {
 
 module.exports = new Stage();
 
-},{}],129:[function(require,module,exports){
+},{}],130:[function(require,module,exports){
 var Point = require('./point');
 
 var Triangle = function(texture, anchorX, anchorY, x, y, height, width) {
@@ -25090,7 +25096,7 @@ var Triangle = function(texture, anchorX, anchorY, x, y, height, width) {
 
 module.exports = Triangle;
 
-},{"./point":125}],130:[function(require,module,exports){
+},{"./point":126}],131:[function(require,module,exports){
 (function (process){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -25318,7 +25324,7 @@ var substr = 'ab'.substr(-1) === 'b'
 ;
 
 }).call(this,require('_process'))
-},{"_process":131}],131:[function(require,module,exports){
+},{"_process":132}],132:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -25410,7 +25416,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],132:[function(require,module,exports){
+},{}],133:[function(require,module,exports){
 (function (global){
 /*! https://mths.be/punycode v1.3.2 by @mathias */
 ;(function(root) {
@@ -25944,7 +25950,7 @@ process.umask = function() { return 0; };
 }(this));
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],133:[function(require,module,exports){
+},{}],134:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -26030,7 +26036,7 @@ var isArray = Array.isArray || function (xs) {
   return Object.prototype.toString.call(xs) === '[object Array]';
 };
 
-},{}],134:[function(require,module,exports){
+},{}],135:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -26117,13 +26123,13 @@ var objectKeys = Object.keys || function (obj) {
   return res;
 };
 
-},{}],135:[function(require,module,exports){
+},{}],136:[function(require,module,exports){
 'use strict';
 
 exports.decode = exports.parse = require('./decode');
 exports.encode = exports.stringify = require('./encode');
 
-},{"./decode":133,"./encode":134}],136:[function(require,module,exports){
+},{"./decode":134,"./encode":135}],137:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -26832,13 +26838,13 @@ function isNullOrUndefined(arg) {
   return  arg == null;
 }
 
-},{"punycode":132,"querystring":135}],137:[function(require,module,exports){
+},{"punycode":133,"querystring":136}],138:[function(require,module,exports){
 (function (global){
 'use strict';
 
 // Globally bootstrap Pixi
 global.PIXI = require('pixi.js');
-console.log(window.innerWidth);
+global.Constants = require('./constants');
 var Collision = require('./collision');
 
 global.detectCollision = Collision.detectCollision;
@@ -26846,4 +26852,4 @@ global.detectCollisionAxis = Collision.detectCollisionAxis;
 
 require('./asteroids');
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./asteroids":123,"./collision":124,"pixi.js":105}]},{},[137]);
+},{"./asteroids":123,"./collision":124,"./constants":125,"pixi.js":105}]},{},[138]);

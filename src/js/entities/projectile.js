@@ -1,8 +1,16 @@
-var Point = require('./point');
+'use strict';
+
+var Point = require('./shapes/point');
+
+var calcAbsolute = require('../utils/math').calcAbsoluteVector;
+var calcRelativeScalar = require('../utils/math').calcRelativeScalar;
+
+var projectileTexture = PIXI.Texture.fromImage("resources/images/bullet.png", true)
+var dimensions = calcAbsolute(new Point(Constants.PROJECTILE_SIZE, Constants.PROJECTILE_SIZE));
 
 var calcProjectileSpeed = function(angle) {
-    var projectileSpeedX = Constants.BASE_PROJECTILE_SPEED * Math.cos(angle);
-    var projectileSpeedY = Constants.BASE_PROJECTILE_SPEED * Math.sin(angle);
+    var projectileSpeedX = +Constants.PROJECTILE_SPEED * Math.cos(angle);
+    var projectileSpeedY = +Constants.PROJECTILE_SPEED * Math.sin(angle);
 
     return {
         'projectileSpeedX': projectileSpeedX,
@@ -10,29 +18,30 @@ var calcProjectileSpeed = function(angle) {
     };
 };
 
-var Projectile = function(texture, player) {
+var Projectile = function(player) {
+    this.sprite = new PIXI.Sprite(projectileTexture);
+
     var projectileSpeeds = calcProjectileSpeed(player.sprite.rotation - (0.5 * Math.PI));
-    this.speedX = projectileSpeeds.projectileSpeedX;
-    this.speedY = projectileSpeeds.projectileSpeedY;
+    this.speed = new Point(projectileSpeeds.projectileSpeedX, projectileSpeeds.projectileSpeedY);
+
+    this.relativePos = new Point(0, 0);
+    this.relativePos.x = (player.relativePos.x) + (.6 * calcRelativeScalar(player.sprite.height)) * Math.sin(player.sprite.rotation);
+    this.relativePos.y = (player.relativePos.y) - (.6 * calcRelativeScalar(player.sprite.height)) * Math.cos(player.sprite.rotation);
+
+    this._absolutePos = new Point(this.relativePos.x, this.relativePos.y);
+    this.setPosition(this.relativePos);
 
     this.totalDistance = 0;
 
-    this.sprite = new PIXI.Sprite(texture);
-
     this.calcDistance = function() {
-        var distance = Math.sqrt((this.speedX * this.speedX) + (this.speedY * this.speedX));
-        return Math.sqrt((this.speedX * this.speedX) + (this.speedY * this.speedY));
+        return Math.sqrt((this.speed.x * this.speed.x) + (this.speed.y * this.speed.y));
     };
 
     this.sprite.anchor.x = 0.5;
     this.sprite.anchor.y = 0.5;
 
-    this.sprite.position.x = (player.sprite.position.x) + (.6 * player.sprite.height) * Math.sin(player.sprite.rotation);
-    this.sprite.position.y = (player.sprite.position.y) - (.6 * player.sprite.height) * Math.cos(player.sprite.rotation);
-
-    var projectileWidthRatio = .0048828;
-    this.sprite.height = Stage.width * projectileWidthRatio;
-    this.sprite.width = Stage.width * projectileWidthRatio;
+    this.sprite.height = dimensions.y;
+    this.sprite.width = dimensions.x;
 
     this.lateral = Math.sqrt((this.sprite.height / 2 * this.sprite.height / 2) + (this.sprite.width / 2 * this.sprite.width / 2));
     
@@ -79,7 +88,80 @@ var Projectile = function(texture, player) {
     this.detectCollision = detectCollision.bind(this);
     this.detectCollisionAxis = detectCollisionAxis.bind(this);
     
-    Stage.addEntity(this.sprite);
+    Stage.addChild(this.sprite);
+};
+
+Projectile.prototype.remove = function() {
+    Stage.removeChild(this.sprite);
+}
+
+Projectile.prototype.setPosition = function(position) {
+    this.relativePos.x = position.x;
+    this.relativePos.y = position.y;
+
+    this._absolutePos.x = position.x;
+    this._absolutePos.y = position.y;
+    calcAbsolute(this._absolutePos);
+
+    this.sprite.position.x = this._absolutePos.x;
+    this.sprite.position.y = this._absolutePos.y;
+};
+
+Projectile.prototype.setSpeed = function(speed) {
+    this.speed.x = speed.x;
+    this.speed.y = speed.y;
+};
+
+Projectile.prototype.setTint = function(tint) {
+    this.sprite.texture.tint = tint;
+};
+
+Projectile.prototype.getTint = function(tint) {
+    return this.sprite.texture.tint;
+};
+
+Projectile.prototype.step = function() {
+    if (this.totalDistance < Constants.PROJECTILE_DISTANCE) {
+        this.relativePos.x += this.speed.x;
+        this.relativePos.y += this.speed.y;
+
+        /* Wrap projectile position to the edges of the map */
+        if (this.relativePos.x > +Constants.RELATIVE_X_MAX) {
+            this.relativePos.x -= +Constants.RELATIVE_X_MAX;
+        }
+        if (this.relativePos.x < 0) {
+            this.relativePos.x += +Constants.RELATIVE_X_MAX;
+        }
+        if (this.relativePos.y > +Constants.RELATIVE_Y_MAX) {
+            this.relativePos.y -= +Constants.RELATIVE_Y_MAX;
+        }
+        if (this.relativePos.y < 0) {
+            this.relativePos.y += +Constants.RELATIVE_Y_MAX;
+        }
+
+        this.totalDistance += this.calcDistance();
+
+        this.setPosition(this.relativePos);
+    } else {
+        Stage.removeProjectile(this);
+    }
+};
+
+Projectile.prototype.equals = function(projectile2) {
+    if (!this.relativePos.equals(projectile2.relativePos)) {
+        return false;
+    }
+    if (!this._absolutePos.equals(projectile2._absolutePos)) {
+        return false;
+    }
+    if (!this.speed.equals(projectile2.speed)) {
+        return false;
+    }
+    if (this.totalDistance !== projectile2.totalDistance) {
+        return false;
+    }
+
+    return true;
 };
 
 module.exports = Projectile;

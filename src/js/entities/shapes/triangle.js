@@ -1,7 +1,9 @@
+'use strict';
+
 var Point = require('./point');
 
-var Triangle = function(texture, anchorX, anchorY, x, y, height, width) {
-    this.sprite = new PIXI.Sprite(texture);
+var Triangle = function(sprite, anchorX, anchorY, x, y, height, width, container) {
+    this.sprite = sprite;
     this.sprite.anchor.x = anchorX;
     this.sprite.anchor.y = anchorY;
     
@@ -54,7 +56,11 @@ var Triangle = function(texture, anchorX, anchorY, x, y, height, width) {
     this.detectCollision = detectCollision.bind(this);
     this.detectCollisionAxis = detectCollisionAxis.bind(this);
 
-    Stage.addEntity(this.sprite);
+    if (container) {
+        container.addChild(this.sprite);
+    } else {
+        Stage.addChild(this.sprite);
+    }
 };
 
 module.exports = Triangle;

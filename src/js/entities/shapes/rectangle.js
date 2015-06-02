@@ -62,7 +62,7 @@ var Rectangle = function(texture, anchorX, anchorY, x, y, height, width) {
     this.detectCollision = detectCollision.bind(this);
     this.detectCollisionAxis = detectCollisionAxis.bind(this);
     
-    Stage.addEntity(this.sprite);
+    Stage.addChild(this.sprite);
 };
 
 module.exports = Rectangle;

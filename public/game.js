@@ -1125,7 +1125,7 @@
 }());
 
 }).call(this,require('_process'))
-},{"_process":132}],2:[function(require,module,exports){
+},{"_process":135}],2:[function(require,module,exports){
 'use strict';
 
 module.exports = earcut;
@@ -2534,7 +2534,7 @@ Loader.LOAD_TYPE = Resource.LOAD_TYPE;
 Loader.XHR_READY_STATE = Resource.XHR_READY_STATE;
 Loader.XHR_RESPONSE_TYPE = Resource.XHR_RESPONSE_TYPE;
 
-},{"./Resource":6,"async":1,"eventemitter3":3,"url":137}],6:[function(require,module,exports){
+},{"./Resource":6,"async":1,"eventemitter3":3,"url":140}],6:[function(require,module,exports){
 var EventEmitter = require('eventemitter3'),
     _url = require('url'),
     // tests is CORS is supported in XHR, if not we need to use XDR
@@ -3306,7 +3306,7 @@ function setExtMap(map, extname, val) {
     map[extname] = val;
 }
 
-},{"eventemitter3":3,"url":137}],7:[function(require,module,exports){
+},{"eventemitter3":3,"url":140}],7:[function(require,module,exports){
 module.exports = {
 
     // private property
@@ -23292,7 +23292,7 @@ module.exports = function ()
     };
 };
 
-},{"../core":19,"../core/utils":66,"../extras":75,"path":131,"resource-loader":8}],111:[function(require,module,exports){
+},{"../core":19,"../core/utils":66,"../extras":75,"path":134,"resource-loader":8}],111:[function(require,module,exports){
 /**
  * @file        Main export of the PIXI loaders library
  * @author      Mat Groves <mat@goodboydigital.com>
@@ -23458,7 +23458,7 @@ module.exports = function ()
     };
 };
 
-},{"../core":19,"path":131,"resource-loader":8}],114:[function(require,module,exports){
+},{"../core":19,"path":134,"resource-loader":8}],114:[function(require,module,exports){
 var core = require('../core');
 
 module.exports = function ()
@@ -24505,68 +24505,30 @@ if (!global.cancelAnimationFrame) {
 'use strict';
 
 global.Stage = require('./entities/stage');
-var Point = require('./entities/point');
+
+var Input = require('./utils/input');
+
+var Point = require('./entities/shapes/point');
+var Rectangle = require('./entities/shapes/rectangle');
+var Triangle = require('./entities/shapes/triangle');
+
 var Projectile = require('./entities/projectile');
-var Rectangle = require('./entities/rectangle');
-var Triangle = require('./entities/triangle');
+var Player = require('./entities/player');
+var player = new Player(50, 55 / 2);
+player.setPosition({x: 25, y: 25});
+Input.setupPlayerInput(player);
+Stage.addPlayer(player);
 
 var server_ip_address = "asteroids-cherrycoke.rhcloud.com/";
 // var server_port = OPENSHIFT_NODEJS_PORT || 8080;
 
-var jetOn = false;
-var rotate = 'none';
-
-var projectiles = [];
-var projectileTexture = PIXI.Texture.fromImage("resources/images/bullet.png", true);
-
-document.onkeydown = function(e) {
-    if (e.keyCode === 38) {
-        jetOn = true;
-    }
-    if (e.keyCode === 39 && rotate !== 'left') {
-        rotate = 'right';
-    }
-    if (e.keyCode === 37 && rotate !== 'right') {
-        rotate = 'left';
-    }
-};
-
-document.onkeyup = function(e) {
-    if (e.keyCode === 38) {
-        jetOn = false;
-    }
-    if (e.keyCode === 39 && rotate !== 'left') {
-        rotate = 'none';
-    }
-    if (e.keyCode === 37 && rotate !== 'right') {
-        rotate = 'none';
-    }
-    if (e.keyCode === 32) {
-        var projectile = new Projectile(projectileTexture, player);
-        projectiles.push(projectile);
-    }
-};
-
-var calcAcceleration = function(angle) {
-    var accelerationX = +Constants.BASE_ACCELERATION * Math.cos(angle);
-    var accelerationY = +Constants.BASE_ACCELERATION * Math.sin(angle);
-
-    return {
-        'accelerationX': accelerationX,
-        'accelerationY': accelerationY
-    };
-};
-
-var speedX = 0;
-var speedY = 0;
-
 requestAnimationFrame(animate);
 
-// Largest asteroid 
+// Largest asteroid
 // Aspect ratio (H/W)
 // 1.11773
 var asteroidWidthRatio = .17;
-var asteroidTexture1 = PIXI.Texture.fromImage("resources/images/asteroid1@2x.png", true, PIXI.scaleModes.LINEAR);
+var asteroidTexture1 = PIXI.Texture.fromImage("resources/images/asteroid1.png", true, PIXI.scaleModes.LINEAR);
 var width = Stage.width * asteroidWidthRatio;
 var height = width / 1.11773;
 var asteroid1 = new Rectangle(asteroidTexture1, 0.5, 0.5, .25 * Stage.width, .25 * Stage.height, width, height);
@@ -24591,153 +24553,23 @@ var asteroid3 = new Rectangle(asteroidTexture3, 0.5, 0.5, .5 * Stage.width, .75 
 
 var asteroidList = [asteroid1, asteroid2, asteroid3];
 
-// Player aspect ratio (H/W)
-// 1.33075
-var texture = PIXI.Texture.fromImage("resources/images/player.png", true);
-var textureJet = PIXI.Texture.fromImage("resources/images/playerjet.png", true, PIXI.scaleModes.NEAREST);
-var player = new Triangle(texture, 0.5, 0.6, Stage.width / 2, Stage.height / 2, 60, 60 / 1.33075);
-var playerRight = new Triangle(texture, 0.5, 0.6, Stage.width / 2, Stage.height / 2, 60, 60 / 1.33075);
-var playerLeft = new Triangle(texture, 0.5, 0.6, Stage.width / 2, Stage.height / 2, 60, 60 / 1.33075);
-var playerTop = new Triangle(texture, 0.5, 0.6, Stage.width / 2, Stage.height / 2, 60, 60 / 1.33075);
-var playerBottom = new Triangle(texture, 0.5, 0.6, Stage.width / 2, Stage.height / 2, 60, 60 / 1.33075);
-
-player.sprite.tint = playerRight.sprite.tint = playerLeft.sprite.tint = playerTop.sprite.tint = playerBottom.sprite.tint = 16777215;
-
 function animate() {
     requestAnimationFrame(animate);
-    
-    if (jetOn) {
-        player.sprite.texture = textureJet;
-        playerRight.sprite.texture = textureJet;
-        playerLeft.sprite.texture = textureJet;
-        playerTop.sprite.texture = textureJet;
-        playerBottom.sprite.texture = textureJet;
 
-        var magnitudes = calcAcceleration(player.sprite.rotation - (0.5 * Math.PI));
-        speedX += magnitudes.accelerationX;
-        speedY += magnitudes.accelerationY;
-    } else {
-        player.sprite.texture = texture;
-        playerRight.sprite.texture = texture;
-        playerLeft.sprite.texture = texture;
-        playerTop.sprite.texture = texture;
-        playerBottom.sprite.texture = texture;
+    var playerList = Stage.getPlayerList();
+    for (var i = 0; i < playerList.length; i++) {
+        playerList[i].step();
     }
 
-    if (player.sprite.rotation > 2 * Math.PI) {
-        player.sprite.rotation -= 2 * Math.PI;
+    var projectileList = Stage.getProjectileList();
+    for (var i = 0; i < projectileList.length; i++) {
+        projectileList[i].step();
     }
-    if (player.sprite.rotation < 0) {
-        player.sprite.rotation += 2 * Math.PI;
-    }
-
-    if (rotate === 'right') {
-        player.sprite.rotation += +Constants.PLAYER_ROTATION_SPEED;
-        playerRight.sprite.rotation = player.sprite.rotation
-        playerLeft.sprite.rotation = player.sprite.rotation
-        playerTop.sprite.rotation = player.sprite.rotation
-        playerBottom.sprite.rotation = player.sprite.rotation    
-    }
-    if (rotate === 'left') {
-        player.sprite.rotation -= +Constants.PLAYER_ROTATION_SPEED;
-        playerRight.sprite.rotation = player.sprite.rotation
-        playerLeft.sprite.rotation = player.sprite.rotation
-        playerTop.sprite.rotation = player.sprite.rotation
-        playerBottom.sprite.rotation = player.sprite.rotation
-    }
-
-    if (speedX > Constants.MAX_SPEED) {
-        speedX = Constants.MAX_SPEED;
-    }
-    if (speedX < -1 * Constants.MAX_SPEED) {
-        speedX = -1 * Constants.MAX_SPEED;
-    }
-    if (speedY > Constants.MAX_SPEED) {
-        speedY = Constants.MAX_SPEED;
-    }
-    if (speedY < -1 * Constants.MAX_SPEED) {
-        speedY = -1 * Constants.MAX_SPEED;
-    }
-
-    player.sprite.position.x += speedX;
-    player.sprite.position.y += speedY;
-
-    if (player.sprite.position.x > Stage.width) {
-        player.sprite.position.x -= Stage.width;
-    }
-    if (player.sprite.position.x < 0) {
-        player.sprite.position.x += Stage.width;
-    }
-    if (player.sprite.position.y < 0) {
-        player.sprite.position.y += Stage.height;
-    }
-    if (player.sprite.position.y > Stage.height) {
-        player.sprite.position.y -= Stage.height
-    }
-
-    playerRight.sprite.position.x = player.sprite.position.x - Stage.width;
-    playerRight.sprite.position.y = player.sprite.position.y;
-    playerLeft.sprite.position.x = player.sprite.position.x + Stage.width;
-    playerLeft.sprite.position.y = player.sprite.position.y;
-    playerTop.sprite.position.x = player.sprite.position.x;
-    playerTop.sprite.position.y = player.sprite.position.y - Stage.height;
-    playerBottom.sprite.position.x = player.sprite.position.x;
-    playerBottom.sprite.position.y = player.sprite.position.y + Stage.height;
-
-    for (var k = 0; k < projectiles.length; k++) {
-        projectiles[k].sprite.tint = 16777215;
-    }
-
-    // Calculate collisions
-    var newTint = 16777215;
-    for (var j = 0; j < asteroidList.length; j++) {
-        if (player.detectCollision(asteroidList[j])) {
-            newTint = 0x9E0500;
-            asteroidList[j].sprite.tint = 0x9E0500;
-        } else {
-            asteroidList[j].sprite.tint = 16777215;
-        }
-
-        for (k = 0; k < projectiles.length; k++) {
-            if (projectiles[k].detectCollision(asteroidList[j])) {
-                projectiles[k].sprite.tint = 0x9E0500;
-            }
-        }
-    }
-
-    player.sprite.tint = newTint;
-
-    // Calculate player projectiles
-    for (var i = 0; i < projectiles.length; i++) {
-        var currentProjectile = projectiles[i];
-        if (currentProjectile.totalDistance < Constants.MAX_PROJECTILE_DISTANCE) {
-            currentProjectile.sprite.position.x += currentProjectile.speedX;
-            currentProjectile.sprite.position.y += currentProjectile.speedY;
-            currentProjectile.totalDistance += currentProjectile.calcDistance();
-
-            if (currentProjectile.sprite.position.x > Stage.width) {
-                currentProjectile.sprite.position.x -= Stage.width;
-            }
-            if (currentProjectile.sprite.position.x < 0) {
-                currentProjectile.sprite.position.x += Stage.width;
-            }
-            if (currentProjectile.sprite.position.y > Stage.height) {
-                currentProjectile.sprite.position.y -= Stage.height;
-            }
-            if (currentProjectile.sprite.position.y < 0) {
-                currentProjectile.sprite.position.y += Stage.height;
-            }
-        } else {
-            Stage.removeEntity(currentProjectile.sprite);
-            projectiles.splice(i, 1);
-            i -= 1;
-        }
-    }
-    
+      
     Stage.draw();
 };
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./entities/point":126,"./entities/projectile":127,"./entities/rectangle":128,"./entities/stage":129,"./entities/triangle":130}],124:[function(require,module,exports){
+},{"./entities/player":126,"./entities/projectile":127,"./entities/shapes/point":128,"./entities/shapes/rectangle":129,"./entities/shapes/triangle":130,"./entities/stage":131,"./utils/input":132}],124:[function(require,module,exports){
 var detectCollision = function(box2) {
     this.getCorners();
     box2.getCorners();
@@ -24795,39 +24627,228 @@ module.exports = {
 
 },{}],125:[function(require,module,exports){
 module.exports={
+    "PLAYER_ACCELERATION": ".02",
     "PLAYER_ROTATION_SPEED": ".042",
-    "BASE_ACCELERATION": ".12",
-    "BASE_PROJECTILE_SPEED": "8",
-    "MAX_SPEED": "7",
-    "MAX_PROJECTILE_DISTANCE": "650"
+    "PLAYER_SIZE": "6.25",
+    "PLAYER_MAX_SPEED": ".5",
+    "PROJECTILE_DISTANCE": "85",
+    "PROJECTILE_SIZE": ".6",
+    "PROJECTILE_SPEED": "1",
+    "RELATIVE_X_MAX": "100",
+    "RELATIVE_Y_MAX": "56.25",
 }
 
 },{}],126:[function(require,module,exports){
-var Point = function(x, y) {
-    this.x = x;
-    this.y = y;
-    
-    this.calcDot = function(point2) {
-        return ((this.x * point2.x) + (this.y * point2.y));  
-    };
-    
-    this.calcNormal = function() {
-        return new Point(-1 * this.y, this.x);
-    };
-    
-    this.subPoint = function(point2) {
-        return new Point(point2.x - this.x, point2.y - this.y);  
+'use strict';
+
+var Constants = require('../constants');
+var Point = require('./shapes/point');
+var Triangle = require('./shapes/triangle');
+
+var calcAbsolute = require('../utils/math').calcAbsoluteVector;
+
+var texture = PIXI.Texture.fromImage("resources/images/player.png", true);
+var textureJet = PIXI.Texture.fromImage("resources/images/playerjet.png", true);
+var anchorX = 0.5;
+var anchorY = 0.6;
+
+// Player aspect ratio (H / W)
+var playerAspectRatio = 1.33075;
+var dimensions = calcAbsolute(new Point(Constants.PLAYER_SIZE, Constants.PLAYER_SIZE / playerAspectRatio));
+
+var calcAcceleration = function(angle) {
+    var accelerationX = +Constants.PLAYER_ACCELERATION * Math.cos(angle);
+    var accelerationY = +Constants.PLAYER_ACCELERATION * Math.sin(angle);
+
+    return {
+        'accelerationX': accelerationX,
+        'accelerationY': accelerationY
     };
 };
 
-module.exports = Point;
+var Player = function(relativeX, relativeY, tint) {
+    this.relativePos = new Point(relativeX, relativeY);
+    this._absolutePos = new Point(relativeX, relativeY);
 
-},{}],127:[function(require,module,exports){
-var Point = require('./point');
+    this.speed = new Point(0, 0);
+    this.jet = false;
+    this.rotation = 'none';
+    this._container = new PIXI.Container;
+
+    this.setPosition(this.relativePos);
+
+    this._playerLeft = new Triangle(new PIXI.Sprite(texture), anchorX, anchorY, -1 * Stage.width, 0, dimensions.x, dimensions.y, this._container);
+    this._playerRight = new Triangle(new PIXI.Sprite(texture), anchorX, anchorY, Stage.width, 0, dimensions.x, dimensions.y, this._container);
+    this._playerTop = new Triangle(new PIXI.Sprite(texture), anchorX, anchorY, 0, -1 * Stage.height, dimensions.x, dimensions.y, this._container);
+    this._playerBottom = new Triangle(new PIXI.Sprite(texture), anchorX, anchorY, 0, Stage.height, dimensions.x, dimensions.y, this._container);
+
+    Triangle.bind(this)(new PIXI.Sprite(texture), anchorX, anchorY, 0, 0, dimensions.x, dimensions.y, this._container);
+
+    if (tint) {
+        this.setTint(tint);
+    }
+
+    Stage.addChild(this._container);
+};
+
+Player.prototype.remove = function() {
+    Stage.removeChild(this._container);
+}
+
+Player.prototype.setTint = function(tint) {
+    this.sprite.texture.tint = tint;
+    this._playerLeft.sprite.texture.tint = tint;
+    this._playerRight.sprite.texture.tint = tint;
+    this._playerTop.sprite.texture.tint = tint;
+    this._playerBottom.sprite.texture.tint = tint;
+};
+
+Player.prototype.getTint = function(tint) {
+    return this.sprite.texture.tint;
+};
+
+Player.prototype.setSpeed = function(speed) {
+    this.speed.x = speed.x;
+    this.speed.y = speed.y;
+};
+
+Player.prototype.setPosition = function(position) {
+    this.relativePos.x = position.x;
+    this.relativePos.y = position.y;
+
+    this._absolutePos.x = position.x;
+    this._absolutePos.y = position.y;
+    calcAbsolute(this._absolutePos);
+
+    this._container.x = this._absolutePos.x;
+    this._container.y = this._absolutePos.y;
+};
+
+Player.prototype.setJet = function(jet) {
+    this.jet = jet;
+
+    if (!jet) {
+        this.sprite.texture = texture;
+        this._playerLeft.sprite.texture = texture;
+        this._playerRight.sprite.texture = texture;
+        this._playerTop.sprite.texture = texture;
+        this._playerBottom.sprite.texture = texture;
+    } else {
+        this.sprite.texture = textureJet;
+        this._playerLeft.sprite.texture = textureJet;
+        this._playerRight.sprite.texture = textureJet;
+        this._playerTop.sprite.texture = textureJet;
+        this._playerBottom.sprite.texture = textureJet;
+    }
+};
+
+Player.prototype.setRotation = function(rotation) {
+    this.rotation = rotation;
+};
+
+Player.prototype.step = function() {
+    /* Reset rotation if it is < -2pi or > 2pi to prevent variable from continuing forever */
+    if (this.sprite.rotation > 2 * Math.PI) {
+        this.sprite.rotation -= 2 * Math.PI;
+    }
+    if (this.sprite.rotation < -2 * Math.PI) {
+        this.sprite.rotation += 2 * Math.PI;
+    }
+
+    /* Calculate new player angle */
+    if (this.rotation === 'right') {
+        this.sprite.rotation += +Constants.PLAYER_ROTATION_SPEED;
+        this._playerRight.sprite.rotation = this.sprite.rotation;
+        this._playerLeft.sprite.rotation = this.sprite.rotation;
+        this._playerTop.sprite.rotation = this.sprite.rotation;
+        this._playerBottom.sprite.rotation = this.sprite.rotation;
+    }
+    if (this.rotation === 'left') {
+        this.sprite.rotation -= +Constants.PLAYER_ROTATION_SPEED;
+        this._playerRight.sprite.rotation = this.sprite.rotation;
+        this._playerLeft.sprite.rotation = this.sprite.rotation;
+        this._playerTop.sprite.rotation = this.sprite.rotation;
+        this._playerBottom.sprite.rotation = this.sprite.rotation;
+    }
+
+    /* Calculate acceleration and new velocity vectors when jet is on */
+    if (this.jet) {
+        var magnitudes = calcAcceleration(this.sprite.rotation - (0.5 * Math.PI));
+        this.speed.x += magnitudes.accelerationX;
+        this.speed.y += magnitudes.accelerationY;
+    }
+
+    /* Cap player velocity at Constants.PLAYER_MAX_SPEED */
+    if (this.speed.x > +Constants.PLAYER_MAX_SPEED) {
+        this.speed.x = +Constants.PLAYER_MAX_SPEED;
+    }
+    if (this.speed.x < -1 * +Constants.PLAYER_MAX_SPEED) {
+        this.speed.x = -1 * +Constants.PLAYER_MAX_SPEED;
+    }
+    if (this.speed.y > +Constants.PLAYER_MAX_SPEED) {
+        this.speed.y = +Constants.PLAYER_MAX_SPEED;
+    }
+    if (this.speed.y < -1 * +Constants.PLAYER_MAX_SPEED) {
+        this.speed.y = -1 * +Constants.PLAYER_MAX_SPEED;
+    }
+
+    /* Calculate new relative position based on velocity vector */
+    this.relativePos.x += this.speed.x;
+    this.relativePos.y += this.speed.y;
+
+    /* Wrap player position to the edges of the map */
+    if (this.relativePos.x > +Constants.RELATIVE_X_MAX) {
+        this.relativePos.x -= +Constants.RELATIVE_X_MAX;
+    }
+    if (this.relativePos.x < 0) {
+        this.relativePos.x += +Constants.RELATIVE_X_MAX;
+    }
+    if (this.relativePos.y > +Constants.RELATIVE_Y_MAX) {
+        this.relativePos.y -= +Constants.RELATIVE_Y_MAX;
+    }
+    if (this.relativePos.y < 0) {
+        this.relativePos.y += +Constants.RELATIVE_Y_MAX;
+    }
+
+    this.setPosition(this.relativePos);
+};
+
+Player.prototype.equals = function(player2) {
+    if (!this.relativePos.equals(player2.relativePos)) {
+        return false;
+    }
+    if (!this._absolutePos.equals(player2._absolutePos)) {
+        return false;
+    }
+    if (!this.speed.equals(player2.speed)) {
+        return false;
+    }
+    if (this.jet !== player2.jet) {
+        return false;
+    }
+    if (this.rotation !== player2.rotation) {
+        return false;
+    }
+
+    return true;
+};
+
+module.exports = Player;
+
+},{"../constants":125,"../utils/math":133,"./shapes/point":128,"./shapes/triangle":130}],127:[function(require,module,exports){
+'use strict';
+
+var Point = require('./shapes/point');
+
+var calcAbsolute = require('../utils/math').calcAbsoluteVector;
+var calcRelativeScalar = require('../utils/math').calcRelativeScalar;
+
+var projectileTexture = PIXI.Texture.fromImage("resources/images/bullet.png", true)
+var dimensions = calcAbsolute(new Point(Constants.PROJECTILE_SIZE, Constants.PROJECTILE_SIZE));
 
 var calcProjectileSpeed = function(angle) {
-    var projectileSpeedX = Constants.BASE_PROJECTILE_SPEED * Math.cos(angle);
-    var projectileSpeedY = Constants.BASE_PROJECTILE_SPEED * Math.sin(angle);
+    var projectileSpeedX = +Constants.PROJECTILE_SPEED * Math.cos(angle);
+    var projectileSpeedY = +Constants.PROJECTILE_SPEED * Math.sin(angle);
 
     return {
         'projectileSpeedX': projectileSpeedX,
@@ -24835,29 +24856,30 @@ var calcProjectileSpeed = function(angle) {
     };
 };
 
-var Projectile = function(texture, player) {
+var Projectile = function(player) {
+    this.sprite = new PIXI.Sprite(projectileTexture);
+
     var projectileSpeeds = calcProjectileSpeed(player.sprite.rotation - (0.5 * Math.PI));
-    this.speedX = projectileSpeeds.projectileSpeedX;
-    this.speedY = projectileSpeeds.projectileSpeedY;
+    this.speed = new Point(projectileSpeeds.projectileSpeedX, projectileSpeeds.projectileSpeedY);
+
+    this.relativePos = new Point(0, 0);
+    this.relativePos.x = (player.relativePos.x) + (.6 * calcRelativeScalar(player.sprite.height)) * Math.sin(player.sprite.rotation);
+    this.relativePos.y = (player.relativePos.y) - (.6 * calcRelativeScalar(player.sprite.height)) * Math.cos(player.sprite.rotation);
+
+    this._absolutePos = new Point(this.relativePos.x, this.relativePos.y);
+    this.setPosition(this.relativePos);
 
     this.totalDistance = 0;
 
-    this.sprite = new PIXI.Sprite(texture);
-
     this.calcDistance = function() {
-        var distance = Math.sqrt((this.speedX * this.speedX) + (this.speedY * this.speedX));
-        return Math.sqrt((this.speedX * this.speedX) + (this.speedY * this.speedY));
+        return Math.sqrt((this.speed.x * this.speed.x) + (this.speed.y * this.speed.y));
     };
 
     this.sprite.anchor.x = 0.5;
     this.sprite.anchor.y = 0.5;
 
-    this.sprite.position.x = (player.sprite.position.x) + (.6 * player.sprite.height) * Math.sin(player.sprite.rotation);
-    this.sprite.position.y = (player.sprite.position.y) - (.6 * player.sprite.height) * Math.cos(player.sprite.rotation);
-
-    var projectileWidthRatio = .0048828;
-    this.sprite.height = Stage.width * projectileWidthRatio;
-    this.sprite.width = Stage.width * projectileWidthRatio;
+    this.sprite.height = dimensions.y;
+    this.sprite.width = dimensions.x;
 
     this.lateral = Math.sqrt((this.sprite.height / 2 * this.sprite.height / 2) + (this.sprite.width / 2 * this.sprite.width / 2));
     
@@ -24904,12 +24926,113 @@ var Projectile = function(texture, player) {
     this.detectCollision = detectCollision.bind(this);
     this.detectCollisionAxis = detectCollisionAxis.bind(this);
     
-    Stage.addEntity(this.sprite);
+    Stage.addChild(this.sprite);
+};
+
+Projectile.prototype.remove = function() {
+    Stage.removeChild(this.sprite);
+}
+
+Projectile.prototype.setPosition = function(position) {
+    this.relativePos.x = position.x;
+    this.relativePos.y = position.y;
+
+    this._absolutePos.x = position.x;
+    this._absolutePos.y = position.y;
+    calcAbsolute(this._absolutePos);
+
+    this.sprite.position.x = this._absolutePos.x;
+    this.sprite.position.y = this._absolutePos.y;
+};
+
+Projectile.prototype.setSpeed = function(speed) {
+    this.speed.x = speed.x;
+    this.speed.y = speed.y;
+};
+
+Projectile.prototype.setTint = function(tint) {
+    this.sprite.texture.tint = tint;
+};
+
+Projectile.prototype.getTint = function(tint) {
+    return this.sprite.texture.tint;
+};
+
+Projectile.prototype.step = function() {
+    if (this.totalDistance < Constants.PROJECTILE_DISTANCE) {
+        this.relativePos.x += this.speed.x;
+        this.relativePos.y += this.speed.y;
+
+        /* Wrap projectile position to the edges of the map */
+        if (this.relativePos.x > +Constants.RELATIVE_X_MAX) {
+            this.relativePos.x -= +Constants.RELATIVE_X_MAX;
+        }
+        if (this.relativePos.x < 0) {
+            this.relativePos.x += +Constants.RELATIVE_X_MAX;
+        }
+        if (this.relativePos.y > +Constants.RELATIVE_Y_MAX) {
+            this.relativePos.y -= +Constants.RELATIVE_Y_MAX;
+        }
+        if (this.relativePos.y < 0) {
+            this.relativePos.y += +Constants.RELATIVE_Y_MAX;
+        }
+
+        this.totalDistance += this.calcDistance();
+
+        this.setPosition(this.relativePos);
+    } else {
+        Stage.removeProjectile(this);
+    }
+};
+
+Projectile.prototype.equals = function(projectile2) {
+    if (!this.relativePos.equals(projectile2.relativePos)) {
+        return false;
+    }
+    if (!this._absolutePos.equals(projectile2._absolutePos)) {
+        return false;
+    }
+    if (!this.speed.equals(projectile2.speed)) {
+        return false;
+    }
+    if (this.totalDistance !== projectile2.totalDistance) {
+        return false;
+    }
+
+    return true;
 };
 
 module.exports = Projectile;
 
-},{"./point":126}],128:[function(require,module,exports){
+},{"../utils/math":133,"./shapes/point":128}],128:[function(require,module,exports){
+var Point = function(x, y) {
+    this.x = x;
+    this.y = y;
+};
+
+Point.prototype.calcDot = function(point2) {
+    return ((this.x * point2.x) + (this.y * point2.y));
+};
+
+Point.prototype.calcNormal = function() {
+    return new Point(-1 * this.y, this.x);
+};
+
+Point.prototype.subPoint = function(point2) {
+    return new Point(point2.x - this.x, point2.y - this.y);  
+};
+
+Point.prototype.equals = function(point2) {
+    if (this.x === point2.x && this.y === point2.y) {
+        return true;
+    } else {
+        return false;
+    }
+};
+
+module.exports = Point;
+
+},{}],129:[function(require,module,exports){
 'use strict';
 
 var Point = require('./point');
@@ -24974,71 +25097,18 @@ var Rectangle = function(texture, anchorX, anchorY, x, y, height, width) {
     this.detectCollision = detectCollision.bind(this);
     this.detectCollisionAxis = detectCollisionAxis.bind(this);
     
-    Stage.addEntity(this.sprite);
+    Stage.addChild(this.sprite);
 };
 
 module.exports = Rectangle;
 
-},{"./point":126}],129:[function(require,module,exports){
+},{"./point":128}],130:[function(require,module,exports){
 'use strict';
 
-var calcStageDimensions = function() {
-    /* Set stage width and height to largest values at 16:9 ratio that will fit in the window */
-    if (this.scaleCanvasDown) {
-        this.width = (window.innerWidth / 1.2) * this.pixelRatio;    
-    } else {
-        this.width = (window.innerWidth / 1.2);
-    }
-    this.height = this.width * (9 / 16);
-};
-
-function Stage() {
-    this.scaleCanvasDown = false;
-    this.pixelRatio = window.devicePixelRatio;
-
-    if (this.pixelRatio === 4) {
-        this.pixelRatio = 2;
-        this.scaleCanvasDown = true;
-    }
-    // console.log(this.pixelRatio);
-    // this.pixelRatio = 2;
-
-    calcStageDimensions.bind(this)();
-
-    var gameStage = new PIXI.Stage(0x212226);
-    var gameRenderer = PIXI.autoDetectRenderer(this.width, this.height, {antialias: false, resolution: this.pixelRatio});
-
-    this.draw = function() {
-        gameRenderer.render(gameStage);
-    };
-
-    this.addEntity = function(entity) {
-        gameStage.addChild(entity);
-    };
-
-    this.removeEntity = function(entity) {
-        gameStage.removeChild(entity);
-    };
-
-    gameRenderer.view.id = "game"
-    if (this.scaleCanvasDown) {
-        gameRenderer.view.style.width = this.width / this.pixelRatio;
-        gameRenderer.view.style.height = this.height / this.pixelRatio;
-    } else {
-        gameRenderer.view.style.width = this.width;
-        gameRenderer.view.style.height = this.height;
-    }
-    document.body.appendChild(gameRenderer.view);
-    console.log(gameRenderer.view.attributes)
-};
-
-module.exports = new Stage();
-
-},{}],130:[function(require,module,exports){
 var Point = require('./point');
 
-var Triangle = function(texture, anchorX, anchorY, x, y, height, width) {
-    this.sprite = new PIXI.Sprite(texture);
+var Triangle = function(sprite, anchorX, anchorY, x, y, height, width, container) {
+    this.sprite = sprite;
     this.sprite.anchor.x = anchorX;
     this.sprite.anchor.y = anchorY;
     
@@ -25091,12 +25161,224 @@ var Triangle = function(texture, anchorX, anchorY, x, y, height, width) {
     this.detectCollision = detectCollision.bind(this);
     this.detectCollisionAxis = detectCollisionAxis.bind(this);
 
-    Stage.addEntity(this.sprite);
+    if (container) {
+        container.addChild(this.sprite);
+    } else {
+        Stage.addChild(this.sprite);
+    }
 };
 
 module.exports = Triangle;
 
-},{"./point":126}],131:[function(require,module,exports){
+},{"./point":128}],131:[function(require,module,exports){
+'use strict';
+
+var calcStageDimensions = function() {
+    /* Set stage width and height to largest values at 16:9 ratio that will fit in the window */
+    if (this.scaleCanvasDown) {
+        this.width = (window.innerWidth / 1.2) * this.pixelRatio;    
+    } else {
+        this.width = (window.innerWidth / 1.2);
+    }
+    this.height = this.width * (9 / 16);
+};
+
+function Stage() {
+    this.scaleCanvasDown = false;
+    this.pixelRatio = window.devicePixelRatio;
+
+    if (this.pixelRatio === 4) {
+        this.pixelRatio = 2;
+        this.scaleCanvasDown = true;
+    }
+
+    calcStageDimensions.bind(this)();
+
+    this._playerList = [];
+    this._projectileList = [];
+    this._gameStage = new PIXI.Container(0x212226);
+    this._gameRenderer = PIXI.autoDetectRenderer(this.width, this.height, {antialias: false, resolution: this.pixelRatio});
+
+    if (this.scaleCanvasDown) {
+        this._gameRenderer.view.style.width = this.width / this.pixelRatio;
+        this._gameRenderer.view.style.height = this.height / this.pixelRatio;
+    } else {
+        this._gameRenderer.view.style.width = this.width;
+        this._gameRenderer.view.style.height = this.height;
+    }
+
+    document.body.appendChild(this._gameRenderer.view);
+};
+
+Stage.prototype.draw = function() {
+    this._gameRenderer.render(this._gameStage);
+};
+
+Stage.prototype.addChild = function(entity) {
+    this._gameStage.addChild(entity);
+};
+
+Stage.prototype.removeChild = function(entity) {
+    this._gameStage.removeChild(entity);
+};
+
+Stage.prototype.addProjectile = function(projectile) {
+    this._projectileList.push(projectile);
+};
+
+Stage.prototype.removeProjectile = function(projectile) {
+    for (var i = 0; i < this._projectileList.length; i++) {
+        if (this._projectileList[i].equals(projectile)) {
+            this._projectileList.splice(i, 1);
+            projectile.remove();
+            break;
+        }
+    }
+};
+
+Stage.prototype.getProjectileList = function() {
+    return this._projectileList;
+};
+
+Stage.prototype.addPlayer = function(player) {
+    this._playerList.push(player);
+};
+
+Stage.prototype.removePlayer = function(player) {
+    for (var i = 0; i < this._playerList.length; i++) {
+        if (this._playerList[i].equals(player)) {
+            this._playerList.splice(i, 1);
+            player.remove();
+            break;
+        }
+    }
+};
+
+Stage.prototype.getPlayerList = function() {
+    return this._playerList;
+};
+
+module.exports = new Stage();
+
+},{}],132:[function(require,module,exports){
+'use strict';
+
+var Projectile = require('../entities/projectile');
+
+var playerList = [];
+
+document.onkeydown = function(e) {
+    for (var i = 0; i < playerList.length; i++) {
+        var currPlayer = playerList[i];
+        if (e.keyCode === 38) {
+            currPlayer.setJet(true);
+        }
+        if (e.keyCode === 39 && currPlayer.rotation !== 'left') {
+            currPlayer.setRotation('right');
+        }
+        if (e.keyCode === 37 && currPlayer.rotation !== 'right') {
+            currPlayer.setRotation('left');
+        }
+    }
+};
+
+document.onkeyup = function(e) {
+    for (var i = 0; i < playerList.length; i++) {
+        var currPlayer = playerList[i];
+        if (e.keyCode === 38) {
+            currPlayer.setJet(false);
+        }
+        if (e.keyCode === 39 && currPlayer.rotation !== 'left') {
+            currPlayer.setRotation('none');
+        }
+        if (e.keyCode === 37 && currPlayer.rotation !== 'right') {
+            currPlayer.setRotation('none');
+        }
+        if (e.keyCode === 32) {
+            var projectile = new Projectile(currPlayer);
+            Stage.addProjectile(projectile);
+        }    
+    }
+};
+
+var setupPlayerInput = function(player) {
+    playerList.push(player);
+};
+
+var clearPlayerInput = function() {
+    playerList = [];
+};
+
+module.exports = {
+    setupPlayerInput: setupPlayerInput,
+    clearPlayerInput: clearPlayerInput
+};
+
+},{"../entities/projectile":127}],133:[function(require,module,exports){
+var Constants = require('../constants');
+
+var width = Stage.width;
+var height = Stage.height;
+var scale = width / 100;   // Multiplicative factor for determining absolute value
+
+var calcAbsoluteScalar = function(scalar) {
+    return scalar * scale;
+};
+
+var calcRelativeScalar = function(scalar) {
+    return scalar / scale;
+};
+
+/* Convert a relative vector to an absolute vector using scale */
+var calcAbsoluteVector = function(vector) {
+    vector.x = calcAbsoluteScalar(vector.x);
+    vector.y = calcAbsoluteScalar(vector.y);
+
+    if (vector.x > width) {
+        vector.x -= width;
+    }
+    if (vector.x < 0) {
+        vector.x += width;
+    }
+    if (vector.y > height) {
+        vector.y -= height;
+    }
+    if (vector.y < 0) {
+        vector.y += height;
+    }
+
+    return vector;
+};
+
+/* Convert an absolute vector to a relative vector using scale */
+var calcRelativeVector = function(vector) {
+    vector.x = calcRelativeScalar(vector.x);
+    vector.y = calcRelativeScalar(vector.y);
+
+    if (vector.x > Constants.RELATIVE_X_MAX) {
+        vector.x -= Constants.RELATIVE_X_MAX;
+    }
+    if (vector.x < 0) {
+        vector.x += Constants.RELATIVE_X_MAX;
+    }
+    if (vector.y > Constants.RELATIVE_Y_MAX) {
+        vector.y -= Constants.RELATIVE_Y_MAX;
+    }
+    if (vector.y < 0) {
+        vector.y += Constants.RELATIVE_Y_MAX;
+    }
+
+    return vector;
+};
+
+module.exports = {
+    calcAbsoluteScalar: calcAbsoluteScalar,
+    calcAbsoluteVector: calcAbsoluteVector,
+    calcRelativeScalar: calcRelativeScalar,
+    calcRelativeVector: calcRelativeVector
+};
+
+},{"../constants":125}],134:[function(require,module,exports){
 (function (process){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -25324,7 +25606,7 @@ var substr = 'ab'.substr(-1) === 'b'
 ;
 
 }).call(this,require('_process'))
-},{"_process":132}],132:[function(require,module,exports){
+},{"_process":135}],135:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -25416,7 +25698,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],133:[function(require,module,exports){
+},{}],136:[function(require,module,exports){
 (function (global){
 /*! https://mths.be/punycode v1.3.2 by @mathias */
 ;(function(root) {
@@ -25950,7 +26232,7 @@ process.umask = function() { return 0; };
 }(this));
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],134:[function(require,module,exports){
+},{}],137:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -26036,7 +26318,7 @@ var isArray = Array.isArray || function (xs) {
   return Object.prototype.toString.call(xs) === '[object Array]';
 };
 
-},{}],135:[function(require,module,exports){
+},{}],138:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -26123,13 +26405,13 @@ var objectKeys = Object.keys || function (obj) {
   return res;
 };
 
-},{}],136:[function(require,module,exports){
+},{}],139:[function(require,module,exports){
 'use strict';
 
 exports.decode = exports.parse = require('./decode');
 exports.encode = exports.stringify = require('./encode');
 
-},{"./decode":134,"./encode":135}],137:[function(require,module,exports){
+},{"./decode":137,"./encode":138}],140:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -26838,18 +27120,18 @@ function isNullOrUndefined(arg) {
   return  arg == null;
 }
 
-},{"punycode":133,"querystring":136}],138:[function(require,module,exports){
+},{"punycode":136,"querystring":139}],141:[function(require,module,exports){
 (function (global){
 'use strict';
 
 // Globally bootstrap Pixi
 global.PIXI = require('pixi.js');
 global.Constants = require('./constants');
-var Collision = require('./collision');
 
+var Collision = require('./collision');
 global.detectCollision = Collision.detectCollision;
 global.detectCollisionAxis = Collision.detectCollisionAxis;
 
 require('./asteroids');
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./asteroids":123,"./collision":124,"./constants":125,"pixi.js":105}]},{},[138]);
+},{"./asteroids":123,"./collision":124,"./constants":125,"pixi.js":105}]},{},[141]);

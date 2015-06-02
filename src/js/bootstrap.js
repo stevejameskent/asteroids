@@ -3,8 +3,8 @@
 // Globally bootstrap Pixi
 global.PIXI = require('pixi.js');
 global.Constants = require('./constants');
-var Collision = require('./collision');
 
+var Collision = require('./collision');
 global.detectCollision = Collision.detectCollision;
 global.detectCollisionAxis = Collision.detectCollisionAxis;
 

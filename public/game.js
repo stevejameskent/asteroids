@@ -1125,7 +1125,7 @@
 }());
 
 }).call(this,require('_process'))
-},{"_process":135}],2:[function(require,module,exports){
+},{"_process":138}],2:[function(require,module,exports){
 'use strict';
 
 module.exports = earcut;
@@ -2534,7 +2534,7 @@ Loader.LOAD_TYPE = Resource.LOAD_TYPE;
 Loader.XHR_READY_STATE = Resource.XHR_READY_STATE;
 Loader.XHR_RESPONSE_TYPE = Resource.XHR_RESPONSE_TYPE;
 
-},{"./Resource":6,"async":1,"eventemitter3":3,"url":140}],6:[function(require,module,exports){
+},{"./Resource":6,"async":1,"eventemitter3":3,"url":143}],6:[function(require,module,exports){
 var EventEmitter = require('eventemitter3'),
     _url = require('url'),
     // tests is CORS is supported in XHR, if not we need to use XDR
@@ -3306,7 +3306,7 @@ function setExtMap(map, extname, val) {
     map[extname] = val;
 }
 
-},{"eventemitter3":3,"url":140}],7:[function(require,module,exports){
+},{"eventemitter3":3,"url":143}],7:[function(require,module,exports){
 module.exports = {
 
     // private property
@@ -23292,7 +23292,7 @@ module.exports = function ()
     };
 };
 
-},{"../core":19,"../core/utils":66,"../extras":75,"path":134,"resource-loader":8}],111:[function(require,module,exports){
+},{"../core":19,"../core/utils":66,"../extras":75,"path":137,"resource-loader":8}],111:[function(require,module,exports){
 /**
  * @file        Main export of the PIXI loaders library
  * @author      Mat Groves <mat@goodboydigital.com>
@@ -23458,7 +23458,7 @@ module.exports = function ()
     };
 };
 
-},{"../core":19,"path":134,"resource-loader":8}],114:[function(require,module,exports){
+},{"../core":19,"path":137,"resource-loader":8}],114:[function(require,module,exports){
 var core = require('../core');
 
 module.exports = function ()
@@ -24506,70 +24506,79 @@ if (!global.cancelAnimationFrame) {
 
 global.Stage = require('./entities/stage');
 
+var NO_COLLISION_TINT = 16777215;
+var COLLISION_TINT = 0x9E0500;
+
 var Input = require('./utils/input');
 
 var Point = require('./entities/shapes/point');
 var Rectangle = require('./entities/shapes/rectangle');
 var Triangle = require('./entities/shapes/triangle');
 
+var AsteroidSmall = require('./entities/asteroid_small');
+var AsteroidMedium = require('./entities/asteroid_medium');
+var AsteroidLarge = require('./entities/asteroid_large');
 var Projectile = require('./entities/projectile');
+
 var Player = require('./entities/player');
 var player = new Player(50, 55 / 2);
-player.setPosition({x: 25, y: 25});
 Input.setupPlayerInput(player);
-Stage.addPlayer(player);
 
 var server_ip_address = "asteroids-cherrycoke.rhcloud.com/";
 // var server_port = OPENSHIFT_NODEJS_PORT || 8080;
 
+var asteroid1 = new AsteroidLarge(25, 14);
+asteroid1.setSpeed(.05, .025);
+var asteroid2 = new AsteroidMedium(75, 14);
+asteroid2.setSpeed(.08, .1);
+var asteroid3 = new AsteroidSmall(50, 42);
+asteroid3.setSpeed(-.04, -.07);
+
 requestAnimationFrame(animate);
 
-// Largest asteroid
-// Aspect ratio (H/W)
-// 1.11773
-var asteroidWidthRatio = .17;
-var asteroidTexture1 = PIXI.Texture.fromImage("resources/images/asteroid1.png", true, PIXI.scaleModes.LINEAR);
-var width = Stage.width * asteroidWidthRatio;
-var height = width / 1.11773;
-var asteroid1 = new Rectangle(asteroidTexture1, 0.5, 0.5, .25 * Stage.width, .25 * Stage.height, width, height);
-
-// Second largest asteroid
-// Aspect ratio (H/W)
-// 1.048338
-asteroidWidthRatio = .08;
-var asteroidTexture2 = PIXI.Texture.fromImage("resources/images/asteroid2.png", true, PIXI.scaleModes.NEAREST);
-width = Stage.width * asteroidWidthRatio;
-height = width / 1.048338;
-var asteroid2 = new Rectangle(asteroidTexture2, 0.5, 0.5, .75 * Stage.width, .25 * Stage.height, width, height);
-
-// Smallest asteroid
-// Aspect ratio (H/W)
-// 1.128
-asteroidWidthRatio = .02929;
-var asteroidTexture3 = PIXI.Texture.fromImage("resources/images/asteroid3.png", true, PIXI.scaleModes.NEAREST);
-width = Stage.width * asteroidWidthRatio;
-height = width / 1.128;
-var asteroid3 = new Rectangle(asteroidTexture3, 0.5, 0.5, .5 * Stage.width, .75 * Stage.height, width, height);
-
-var asteroidList = [asteroid1, asteroid2, asteroid3];
+// var asteroidList = [asteroid1, asteroid2, asteroid3];
 
 function animate() {
     requestAnimationFrame(animate);
+    var i, j, k;
 
+    var asteroidList = Stage.getAsteroidList();
     var playerList = Stage.getPlayerList();
-    for (var i = 0; i < playerList.length; i++) {
-        playerList[i].step();
+    var projectileList = Stage.getProjectileList();
+
+    for (i = 0; i < asteroidList.length; i++) {
+        asteroidList[i].step();
+        asteroidList[i].setTint(NO_COLLISION_TINT);
     }
 
-    var projectileList = Stage.getProjectileList();
-    for (var i = 0; i < projectileList.length; i++) {
-        projectileList[i].step();
+    for (i = 0; i < playerList.length; i++) {
+        playerList[i].step();
+        playerList[i].setTint(NO_COLLISION_TINT);
+
+        for (j = 0; j < asteroidList.length; j++) {
+            if (asteroidList[j].detectCollision(playerList[i])) {
+                asteroidList[j].setTint(COLLISION_TINT);
+                playerList[i].setTint(COLLISION_TINT);
+            }
+        }
     }
-      
+
+    for (i = 0; i < projectileList.length; i++) {
+        projectileList[i].step();
+        projectileList[i].setTint(NO_COLLISION_TINT);
+
+        for (j = 0; j < asteroidList.length; j++) {
+            if (asteroidList[j].detectCollision(projectileList[i])) {
+                asteroidList[j].setTint(COLLISION_TINT);
+                projectileList[i].setTint(COLLISION_TINT);
+            }
+        }
+    }
+
     Stage.draw();
 };
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./entities/player":126,"./entities/projectile":127,"./entities/shapes/point":128,"./entities/shapes/rectangle":129,"./entities/shapes/triangle":130,"./entities/stage":131,"./utils/input":132}],124:[function(require,module,exports){
+},{"./entities/asteroid_large":126,"./entities/asteroid_medium":127,"./entities/asteroid_small":128,"./entities/player":129,"./entities/projectile":130,"./entities/shapes/point":131,"./entities/shapes/rectangle":132,"./entities/shapes/triangle":133,"./entities/stage":134,"./utils/input":135}],124:[function(require,module,exports){
 var detectCollision = function(box2) {
     this.getCorners();
     box2.getCorners();
@@ -24627,7 +24636,10 @@ module.exports = {
 
 },{}],125:[function(require,module,exports){
 module.exports={
-    "PLAYER_ACCELERATION": ".02",
+    "ASTEROID_SMALL_SIZE": "3",
+    "ASTEROID_MEDIUM_SIZE": "8",
+    "ASTEROID_LARGE_SIZE": "16",
+    "PLAYER_ACCELERATION": ".017",
     "PLAYER_ROTATION_SPEED": ".042",
     "PLAYER_SIZE": "6.25",
     "PLAYER_MAX_SPEED": ".5",
@@ -24639,6 +24651,315 @@ module.exports={
 }
 
 },{}],126:[function(require,module,exports){
+'use strict';
+
+var Point = require('./shapes/point');
+var Rectangle = require('./shapes/rectangle');
+
+var calcAbsolute = require('../utils/math').calcAbsoluteVector;
+var texture = PIXI.Texture.fromImage('resources/images/asteroid1.png', true);
+var anchorX = 0.5;
+var anchorY = 0.5;
+
+// Small asteroid aspect ratio (H / W)
+var asteroidAspectRatio = 1.11773;
+var dimensions = calcAbsolute(new Point(Constants.ASTEROID_LARGE_SIZE, Constants.ASTEROID_LARGE_SIZE / asteroidAspectRatio));
+
+var Asteroid = function(relativeX, relativeY, tint) {
+    this.relativePos = new Point(relativeX, relativeY);
+    this._absolutePos = new Point(relativeX, relativeY);
+
+    this.speed = new Point(0, 0);
+    this._container = new PIXI.Container();
+
+    this.setPosition(this.relativePos);
+
+    Rectangle.bind(this)(new PIXI.Sprite(texture), anchorX, anchorY, 0, 0, dimensions.y, dimensions.x);
+    this._asteroidLeft = new Rectangle(new PIXI.Sprite(texture), anchorX, anchorY, -1 * Stage.width, 0, dimensions.y, dimensions.x);
+    this._asteroidRight = new Rectangle(new PIXI.Sprite(texture), anchorX, anchorY, Stage.width, 0, dimensions.y, dimensions.x);
+    this._asteroidTop = new Rectangle(new PIXI.Sprite(texture), anchorX, anchorY, 0, -1 * Stage.height, dimensions.y, dimensions.x);
+    this._asteroidBottom = new Rectangle(new PIXI.Sprite(texture), anchorX, anchorY, 0, Stage.height, dimensions.y, dimensions.x);
+
+    this._container.addChild(this.sprite);
+    this._container.addChild(this._asteroidLeft.sprite);
+    this._container.addChild(this._asteroidRight.sprite);
+    this._container.addChild(this._asteroidTop.sprite);
+    this._container.addChild(this._asteroidBottom.sprite);
+
+    Stage.addChild(this._container);
+    Stage.addAsteroid(this);
+};
+
+Asteroid.inherits(Rectangle);
+
+Asteroid.prototype.getPosition = function() {
+    return this._container.position;
+};
+
+Asteroid.prototype.setPosition = function(position) {
+    this.relativePos.x = position.x;
+    this.relativePos.y = position.y;
+
+    this._absolutePos.x = position.x;
+    this._absolutePos.y = position.y;
+    calcAbsolute(this._absolutePos);
+
+    this._container.position.x = this._absolutePos.x;
+    this._container.position.y = this._absolutePos.y;
+};
+
+Asteroid.prototype.setTint = function(tint) {
+    this.sprite.tint = tint;
+    this._asteroidLeft.sprite.tint = tint;
+    this._asteroidRight.sprite.tint = tint;
+    this._asteroidTop.sprite.tint = tint;
+    this._asteroidBottom.sprite.tint = tint;
+};
+
+Asteroid.prototype.getTint = function(tint) {
+    return this.sprite.tint;
+};
+
+Asteroid.prototype.setSpeed = function(speedX, speedY) {
+    this.speed.x = speedX;
+    this.speed.y = speedY;
+};
+
+Asteroid.prototype.step = function() {
+    /* Calculate new relative position based on velocity vector */
+    this.relativePos.x += this.speed.x;
+    this.relativePos.y += this.speed.y;
+
+    /* Wrap asteroid position to the edges of the map */
+    if (this.relativePos.x > +Constants.RELATIVE_X_MAX) {
+        this.relativePos.x -= +Constants.RELATIVE_X_MAX;
+    }
+    if (this.relativePos.x < 0) {
+        this.relativePos.x += +Constants.RELATIVE_X_MAX;
+    }
+    if (this.relativePos.y > +Constants.RELATIVE_Y_MAX) {
+        this.relativePos.y -= +Constants.RELATIVE_Y_MAX;
+    }
+    if (this.relativePos.y < 0) {
+        this.relativePos.y += +Constants.RELATIVE_Y_MAX;
+    }
+
+    this.setPosition(this.relativePos);
+};
+
+Asteroid.prototype.remove = function() {
+    Stage.removeChild(this._container);
+};
+
+module.exports = Asteroid;
+
+},{"../utils/math":136,"./shapes/point":131,"./shapes/rectangle":132}],127:[function(require,module,exports){
+'use strict';
+
+var Point = require('./shapes/point');
+var Rectangle = require('./shapes/rectangle');
+
+var calcAbsolute = require('../utils/math').calcAbsoluteVector;
+var texture = PIXI.Texture.fromImage('resources/images/asteroid2.png', true);
+var anchorX = 0.5;
+var anchorY = 0.5;
+
+// Small asteroid aspect ratio (H / W)
+var asteroidAspectRatio = 1.048338;
+var dimensions = calcAbsolute(new Point(Constants.ASTEROID_MEDIUM_SIZE, Constants.ASTEROID_MEDIUM_SIZE / asteroidAspectRatio));
+
+var Asteroid = function(relativeX, relativeY, tint) {
+    this.relativePos = new Point(relativeX, relativeY);
+    this._absolutePos = new Point(relativeX, relativeY);
+
+    this.speed = new Point(0, 0);
+    this._container = new PIXI.Container();
+
+    this.setPosition(this.relativePos);
+
+    Rectangle.bind(this)(new PIXI.Sprite(texture), anchorX, anchorY, 0, 0, dimensions.y, dimensions.x);
+    this._asteroidLeft = new Rectangle(new PIXI.Sprite(texture), anchorX, anchorY, -1 * Stage.width, 0, dimensions.y, dimensions.x);
+    this._asteroidRight = new Rectangle(new PIXI.Sprite(texture), anchorX, anchorY, Stage.width, 0, dimensions.y, dimensions.x);
+    this._asteroidTop = new Rectangle(new PIXI.Sprite(texture), anchorX, anchorY, 0, -1 * Stage.height, dimensions.y, dimensions.x);
+    this._asteroidBottom = new Rectangle(new PIXI.Sprite(texture), anchorX, anchorY, 0, Stage.height, dimensions.y, dimensions.x);
+
+    this._container.addChild(this.sprite);
+    this._container.addChild(this._asteroidLeft.sprite);
+    this._container.addChild(this._asteroidRight.sprite);
+    this._container.addChild(this._asteroidTop.sprite);
+    this._container.addChild(this._asteroidBottom.sprite);
+
+    Stage.addChild(this._container);
+    Stage.addAsteroid(this);
+};
+
+Asteroid.inherits(Rectangle);
+
+Asteroid.prototype.getPosition = function() {
+    return this._container.position;
+};
+
+Asteroid.prototype.setPosition = function(position) {
+    this.relativePos.x = position.x;
+    this.relativePos.y = position.y;
+
+    this._absolutePos.x = position.x;
+    this._absolutePos.y = position.y;
+    calcAbsolute(this._absolutePos);
+
+    this._container.position.x = this._absolutePos.x;
+    this._container.position.y = this._absolutePos.y;
+};
+
+Asteroid.prototype.setTint = function(tint) {
+    this.sprite.tint = tint;
+    this._asteroidLeft.sprite.tint = tint;
+    this._asteroidRight.sprite.tint = tint;
+    this._asteroidTop.sprite.tint = tint;
+    this._asteroidBottom.sprite.tint = tint;
+};
+
+Asteroid.prototype.getTint = function(tint) {
+    return this.sprite.texture.tint;
+};
+
+Asteroid.prototype.setSpeed = function(speedX, speedY) {
+    this.speed.x = speedX;
+    this.speed.y = speedY;
+};
+
+Asteroid.prototype.step = function() {
+    /* Calculate new relative position based on velocity vector */
+    this.relativePos.x += this.speed.x;
+    this.relativePos.y += this.speed.y;
+
+    /* Wrap asteroid position to the edges of the map */
+    if (this.relativePos.x > +Constants.RELATIVE_X_MAX) {
+        this.relativePos.x -= +Constants.RELATIVE_X_MAX;
+    }
+    if (this.relativePos.x < 0) {
+        this.relativePos.x += +Constants.RELATIVE_X_MAX;
+    }
+    if (this.relativePos.y > +Constants.RELATIVE_Y_MAX) {
+        this.relativePos.y -= +Constants.RELATIVE_Y_MAX;
+    }
+    if (this.relativePos.y < 0) {
+        this.relativePos.y += +Constants.RELATIVE_Y_MAX;
+    }
+
+    this.setPosition(this.relativePos);
+};
+
+Asteroid.prototype.remove = function() {
+    Stage.removeChild(this._container);
+};
+
+module.exports = Asteroid;
+
+},{"../utils/math":136,"./shapes/point":131,"./shapes/rectangle":132}],128:[function(require,module,exports){
+'use strict';
+
+var Point = require('./shapes/point');
+var Rectangle = require('./shapes/rectangle');
+
+var calcAbsolute = require('../utils/math').calcAbsoluteVector;
+var texture = PIXI.Texture.fromImage('resources/images/asteroid3.png', true);
+var anchorX = 0.5;
+var anchorY = 0.5;
+
+// Small asteroid aspect ratio (H / W)
+var asteroidAspectRatio = 1.128;
+var dimensions = calcAbsolute(new Point(Constants.ASTEROID_SMALL_SIZE, Constants.ASTEROID_SMALL_SIZE / asteroidAspectRatio));
+
+var Asteroid = function(relativeX, relativeY, tint) {
+    this.relativePos = new Point(relativeX, relativeY);
+    this._absolutePos = new Point(relativeX, relativeY);
+
+    this.speed = new Point(0, 0);
+    this._container = new PIXI.Container();
+
+    this.setPosition(this.relativePos);
+
+    Rectangle.bind(this)(new PIXI.Sprite(texture), anchorX, anchorY, 0, 0, dimensions.y, dimensions.x);
+    this._asteroidLeft = new Rectangle(new PIXI.Sprite(texture), anchorX, anchorY, -1 * Stage.width, 0, dimensions.y, dimensions.x);
+    this._asteroidRight = new Rectangle(new PIXI.Sprite(texture), anchorX, anchorY, Stage.width, 0, dimensions.y, dimensions.x);
+    this._asteroidTop = new Rectangle(new PIXI.Sprite(texture), anchorX, anchorY, 0, -1 * Stage.height, dimensions.y, dimensions.x);
+    this._asteroidBottom = new Rectangle(new PIXI.Sprite(texture), anchorX, anchorY, 0, Stage.height, dimensions.y, dimensions.x);
+
+    this._container.addChild(this.sprite);
+    this._container.addChild(this._asteroidLeft.sprite);
+    this._container.addChild(this._asteroidRight.sprite);
+    this._container.addChild(this._asteroidTop.sprite);
+    this._container.addChild(this._asteroidBottom.sprite);
+
+    Stage.addChild(this._container);
+    Stage.addAsteroid(this);
+};
+
+Asteroid.inherits(Rectangle);
+
+Asteroid.prototype.getPosition = function() {
+    return this._container.position;
+};
+
+Asteroid.prototype.setPosition = function(position) {
+    this.relativePos.x = position.x;
+    this.relativePos.y = position.y;
+
+    this._absolutePos.x = position.x;
+    this._absolutePos.y = position.y;
+    calcAbsolute(this._absolutePos);
+
+    this._container.position.x = this._absolutePos.x;
+    this._container.position.y = this._absolutePos.y;
+};
+
+Asteroid.prototype.setTint = function(tint) {
+    this.sprite.tint = tint;
+    this._asteroidLeft.sprite.tint = tint;
+    this._asteroidRight.sprite.tint = tint;
+    this._asteroidTop.sprite.tint = tint;
+    this._asteroidBottom.sprite.tint = tint;
+};
+
+Asteroid.prototype.getTint = function(tint) {
+    return this.sprite.texture.tint;
+};
+
+Asteroid.prototype.setSpeed = function(speedX, speedY) {
+    this.speed.x = speedX;
+    this.speed.y = speedY;
+};
+
+Asteroid.prototype.step = function() {
+    /* Calculate new relative position based on velocity vector */
+    this.relativePos.x += this.speed.x;
+    this.relativePos.y += this.speed.y;
+
+    /* Wrap asteroid position to the edges of the map */
+    if (this.relativePos.x > +Constants.RELATIVE_X_MAX) {
+        this.relativePos.x -= +Constants.RELATIVE_X_MAX;
+    }
+    if (this.relativePos.x < 0) {
+        this.relativePos.x += +Constants.RELATIVE_X_MAX;
+    }
+    if (this.relativePos.y > +Constants.RELATIVE_Y_MAX) {
+        this.relativePos.y -= +Constants.RELATIVE_Y_MAX;
+    }
+    if (this.relativePos.y < 0) {
+        this.relativePos.y += +Constants.RELATIVE_Y_MAX;
+    }
+
+    this.setPosition(this.relativePos);
+};
+
+Asteroid.prototype.remove = function() {
+    Stage.removeChild(this._container);
+};
+
+module.exports = Asteroid;
+
+},{"../utils/math":136,"./shapes/point":131,"./shapes/rectangle":132}],129:[function(require,module,exports){
 'use strict';
 
 var Constants = require('../constants');
@@ -24677,39 +24998,47 @@ var Player = function(relativeX, relativeY, tint) {
 
     this.setPosition(this.relativePos);
 
-    this._playerLeft = new Triangle(new PIXI.Sprite(texture), anchorX, anchorY, -1 * Stage.width, 0, dimensions.x, dimensions.y, this._container);
-    this._playerRight = new Triangle(new PIXI.Sprite(texture), anchorX, anchorY, Stage.width, 0, dimensions.x, dimensions.y, this._container);
-    this._playerTop = new Triangle(new PIXI.Sprite(texture), anchorX, anchorY, 0, -1 * Stage.height, dimensions.x, dimensions.y, this._container);
-    this._playerBottom = new Triangle(new PIXI.Sprite(texture), anchorX, anchorY, 0, Stage.height, dimensions.x, dimensions.y, this._container);
+    Triangle.bind(this)(new PIXI.Sprite(texture), anchorX, anchorY, 0, 0, dimensions.x, dimensions.y);
+    this._playerLeft = new Triangle(new PIXI.Sprite(texture), anchorX, anchorY, -1 * Stage.width, 0, dimensions.x, dimensions.y);
+    this._playerRight = new Triangle(new PIXI.Sprite(texture), anchorX, anchorY, Stage.width, 0, dimensions.x, dimensions.y);
+    this._playerTop = new Triangle(new PIXI.Sprite(texture), anchorX, anchorY, 0, -1 * Stage.height, dimensions.x, dimensions.y);
+    this._playerBottom = new Triangle(new PIXI.Sprite(texture), anchorX, anchorY, 0, Stage.height, dimensions.x, dimensions.y);
 
-    Triangle.bind(this)(new PIXI.Sprite(texture), anchorX, anchorY, 0, 0, dimensions.x, dimensions.y, this._container);
+    this._container.addChild(this.sprite);
+    this._container.addChild(this._playerLeft.sprite);
+    this._container.addChild(this._playerRight.sprite);
+    this._container.addChild(this._playerTop.sprite);
+    this._container.addChild(this._playerBottom.sprite);
 
     if (tint) {
         this.setTint(tint);
     }
 
     Stage.addChild(this._container);
+    Stage.addPlayer(this);
 };
+
+Player.inherits(Triangle);
 
 Player.prototype.remove = function() {
     Stage.removeChild(this._container);
 }
 
 Player.prototype.setTint = function(tint) {
-    this.sprite.texture.tint = tint;
-    this._playerLeft.sprite.texture.tint = tint;
-    this._playerRight.sprite.texture.tint = tint;
-    this._playerTop.sprite.texture.tint = tint;
-    this._playerBottom.sprite.texture.tint = tint;
+    this.sprite.tint = tint;
+    this._playerLeft.sprite.tint = tint;
+    this._playerRight.sprite.tint = tint;
+    this._playerTop.sprite.tint = tint;
+    this._playerBottom.sprite.tint = tint;
 };
 
 Player.prototype.getTint = function(tint) {
-    return this.sprite.texture.tint;
+    return this.sprite.tint;
 };
 
-Player.prototype.setSpeed = function(speed) {
-    this.speed.x = speed.x;
-    this.speed.y = speed.y;
+Player.prototype.setSpeed = function(speedX, speedY) {
+    this.speed.x = speedX;
+    this.speed.y = speedY;
 };
 
 Player.prototype.setPosition = function(position) {
@@ -24720,8 +25049,12 @@ Player.prototype.setPosition = function(position) {
     this._absolutePos.y = position.y;
     calcAbsolute(this._absolutePos);
 
-    this._container.x = this._absolutePos.x;
-    this._container.y = this._absolutePos.y;
+    this._container.position.x = this._absolutePos.x;
+    this._container.position.y = this._absolutePos.y;
+};
+
+Player.prototype.getPosition = function() {
+    return this._container.position;
 };
 
 Player.prototype.setJet = function(jet) {
@@ -24774,8 +25107,7 @@ Player.prototype.step = function() {
     /* Calculate acceleration and new velocity vectors when jet is on */
     if (this.jet) {
         var magnitudes = calcAcceleration(this.sprite.rotation - (0.5 * Math.PI));
-        this.speed.x += magnitudes.accelerationX;
-        this.speed.y += magnitudes.accelerationY;
+        this.setSpeed(this.speed.x + magnitudes.accelerationX, this.speed.y + magnitudes.accelerationY);
     }
 
     /* Cap player velocity at Constants.PLAYER_MAX_SPEED */
@@ -24835,7 +25167,7 @@ Player.prototype.equals = function(player2) {
 
 module.exports = Player;
 
-},{"../constants":125,"../utils/math":133,"./shapes/point":128,"./shapes/triangle":130}],127:[function(require,module,exports){
+},{"../constants":125,"../utils/math":136,"./shapes/point":131,"./shapes/triangle":133}],130:[function(require,module,exports){
 'use strict';
 
 var Point = require('./shapes/point');
@@ -24927,6 +25259,7 @@ var Projectile = function(player) {
     this.detectCollisionAxis = detectCollisionAxis.bind(this);
     
     Stage.addChild(this.sprite);
+    Stage.addProjectile(this);
 };
 
 Projectile.prototype.remove = function() {
@@ -24951,11 +25284,11 @@ Projectile.prototype.setSpeed = function(speed) {
 };
 
 Projectile.prototype.setTint = function(tint) {
-    this.sprite.texture.tint = tint;
+    this.sprite.tint = tint;
 };
 
 Projectile.prototype.getTint = function(tint) {
-    return this.sprite.texture.tint;
+    return this.sprite.tint;
 };
 
 Projectile.prototype.step = function() {
@@ -25004,7 +25337,7 @@ Projectile.prototype.equals = function(projectile2) {
 
 module.exports = Projectile;
 
-},{"../utils/math":133,"./shapes/point":128}],128:[function(require,module,exports){
+},{"../utils/math":136,"./shapes/point":131}],131:[function(require,module,exports){
 var Point = function(x, y) {
     this.x = x;
     this.y = y;
@@ -25030,84 +25363,19 @@ Point.prototype.equals = function(point2) {
     }
 };
 
+PIXI.Point.prototype.calcDot = Point.prototype.calcDot;
+PIXI.Point.prototype.calcNormal = Point.prototype.calcNormal;
+PIXI.Point.prototype.subPoint = Point.prototype.subPoint;
+PIXI.Point.prototype.equals = Point.prototype.equals;
+
 module.exports = Point;
 
-},{}],129:[function(require,module,exports){
+},{}],132:[function(require,module,exports){
 'use strict';
 
 var Point = require('./point');
 
-// var pixelationFilter = new PIXI.filters.PixelateFilter();
-
-var Rectangle = function(texture, anchorX, anchorY, x, y, height, width) {
-    this.sprite = new PIXI.Sprite(texture);
-    // this.sprite.filters = [pixelationFilter];
-    // this.sprite.filters[0].size = {x: 1, y: 1};
-    this.sprite.anchor.x = anchorX;
-    this.sprite.anchor.y = anchorY;
-    
-    this.sprite.position.x = x;
-    this.sprite.position.y = y;
-    
-    this.sprite.height = height;
-    this.sprite.width = width;
-    
-    this.lateral = Math.sqrt((this.sprite.height / 2 * this.sprite.height / 2) + (this.sprite.width / 2 * this.sprite.width / 2));
-    
-    this.corners = [];
-    this.normals = [];
-    
-    this.getCorners = function() {
-        this.corners = [];
-        
-        //Top right corner
-        var cornerX = this.sprite.position.x + (this.lateral * Math.cos(this.sprite.rotation - (Math.PI / 4)));
-        var cornerY = this.sprite.position.y + (this.lateral * Math.sin(this.sprite.rotation - (Math.PI / 4)));
-        this.corners.push(new Point(cornerX, cornerY));
-    
-        //Bottom right corner
-        cornerX = this.sprite.position.x + (this.lateral * Math.cos(this.sprite.rotation + (Math.PI / 4)));
-        cornerY = this.sprite.position.y + (this.lateral * Math.sin(this.sprite.rotation + (Math.PI / 4)));
-        this.corners.push(new Point(cornerX, cornerY));
-    
-        //Bottom left corner
-        cornerX = this.sprite.position.x - (this.lateral * Math.cos(this.sprite.rotation - (Math.PI / 4)));
-        cornerY = this.sprite.position.y - (this.lateral * Math.sin(this.sprite.rotation - (Math.PI / 4)));
-        this.corners.push(new Point(cornerX, cornerY));
-    
-        //Top left corner
-        cornerX = this.sprite.position.x - (this.lateral * Math.cos(this.sprite.rotation + (Math.PI / 4)));
-        cornerY = this.sprite.position.y - (this.lateral * Math.sin(this.sprite.rotation + (Math.PI / 4)));
-        this.corners.push(new Point(cornerX, cornerY));
-    };
-    
-    this.getNormals = function() {
-        this.normals = [];
-        
-        for (var i = 0; i < this.corners.length; i++) {
-            var j = i + 1;
-            if (j === this.corners.length) {
-                j = 0;
-            }
-            
-            this.normals.push(this.corners[i].subPoint(this.corners[j]).calcNormal());
-        }
-    };
-
-    this.detectCollision = detectCollision.bind(this);
-    this.detectCollisionAxis = detectCollisionAxis.bind(this);
-    
-    Stage.addChild(this.sprite);
-};
-
-module.exports = Rectangle;
-
-},{"./point":128}],130:[function(require,module,exports){
-'use strict';
-
-var Point = require('./point');
-
-var Triangle = function(sprite, anchorX, anchorY, x, y, height, width, container) {
+var Rectangle = function(sprite, anchorX, anchorY, x, y, height, width) {
     this.sprite = sprite;
     this.sprite.anchor.x = anchorX;
     this.sprite.anchor.y = anchorY;
@@ -25117,32 +25385,35 @@ var Triangle = function(sprite, anchorX, anchorY, x, y, height, width, container
     
     this.sprite.height = height;
     this.sprite.width = width;
+
+    this.dimensions = {
+        height: this.sprite.height,
+        width: this.sprite.width
+    };
     
-    this.corners = [];
+    this.lateral = Math.sqrt((this.sprite.height / 2 * this.sprite.height / 2) + (this.sprite.width / 2 * this.sprite.width / 2));
+    
+    this.corners = [new Point(0, 0), new Point(0, 0), new Point(0, 0), new Point(0, 0)];
     this.normals = [];
     
-    this.c = Math.sqrt((.4 * this.sprite.height * .4 * this.sprite.height) + (.5 * this.sprite.width * .5 * this.sprite.width));
-    
-    this.phi = Math.acos((.4 * this.sprite.height) / this.c);
-    
     this.getCorners = function() {
-        //Top corner
-        this.totalAngle = (Math.PI / 2) - this.sprite.rotation;
-        var cornerX = this.sprite.position.x + (0.6 * this.sprite.height * Math.cos(this.totalAngle));
-        var cornerY = this.sprite.position.y - (0.6 * this.sprite.height * Math.sin(this.totalAngle));
-        this.corners[0] = new Point(cornerX, cornerY);
+        var position = this.getPosition();
         
+        //Top right corner
+        this.corners[0].x = position.x + (this.lateral * Math.cos(this.sprite.rotation - (Math.PI / 4)));
+        this.corners[0].y = position.y + (this.lateral * Math.sin(this.sprite.rotation - (Math.PI / 4)));
+    
         //Bottom right corner
-        this.totalAngle = ((3 * Math.PI) / 2) - this.sprite.rotation + this.phi;
-        cornerX = this.sprite.position.x + (this.c * Math.cos(this.totalAngle));
-        cornerY = this.sprite.position.y - (this.c * Math.sin(this.totalAngle));
-        this.corners[1] = new Point(cornerX, cornerY);
-        
+        this.corners[1].x = position.x + (this.lateral * Math.cos(this.sprite.rotation + (Math.PI / 4)));
+        this.corners[1].y = position.y + (this.lateral * Math.sin(this.sprite.rotation + (Math.PI / 4)));
+    
         //Bottom left corner
-        this.totalAngle = ((3 * Math.PI) / 2) - this.sprite.rotation - this.phi;
-        cornerX = this.sprite.position.x + (this.c * Math.cos(this.totalAngle));
-        cornerY = this.sprite.position.y - (this.c * Math.sin(this.totalAngle));
-        this.corners[2] = new Point(cornerX, cornerY);
+        this.corners[2].x = position.x - (this.lateral * Math.cos(this.sprite.rotation - (Math.PI / 4)));
+        this.corners[2].y = position.y - (this.lateral * Math.sin(this.sprite.rotation - (Math.PI / 4)));
+    
+        //Top left corner
+        this.corners[3].x = position.x - (this.lateral * Math.cos(this.sprite.rotation + (Math.PI / 4)));
+        this.corners[3].y = position.y - (this.lateral * Math.sin(this.sprite.rotation + (Math.PI / 4)));
     };
     
     this.getNormals = function() {
@@ -25160,17 +25431,94 @@ var Triangle = function(sprite, anchorX, anchorY, x, y, height, width, container
 
     this.detectCollision = detectCollision.bind(this);
     this.detectCollisionAxis = detectCollisionAxis.bind(this);
+};
 
-    if (container) {
-        container.addChild(this.sprite);
-    } else {
-        Stage.addChild(this.sprite);
-    }
+Rectangle.prototype.getPosition = function() {
+    return this.sprite.position;
+};
+
+Rectangle.prototype.getDimensions = function() {
+    return this.dimensions;
+};
+
+module.exports = Rectangle;
+
+},{"./point":131}],133:[function(require,module,exports){
+'use strict';
+
+var Point = require('./point');
+
+var Triangle = function(sprite, anchorX, anchorY, x, y, height, width) {
+    this.sprite = sprite;
+    this.sprite.anchor.x = anchorX;
+    this.sprite.anchor.y = anchorY;
+    
+    this.sprite.position.x = x;
+    this.sprite.position.y = y;
+    
+    this.sprite.height = height;
+    this.sprite.width = width;
+
+    this.dimensions = {
+        height: this.sprite.height,
+        width: this.sprite.width
+    };
+    
+    this.corners = [new Point(0, 0), new Point(0, 0), new Point(0, 0)];
+    this.normals = [];
+    
+    this.c = Math.sqrt((.4 * this.sprite.height * .4 * this.sprite.height) + (.5 * this.sprite.width * .5 * this.sprite.width));
+    
+    this.phi = Math.acos((.4 * this.sprite.height) / this.c);
+    
+    this.getCorners = function() {
+        var position = this.getPosition();
+        var dimensions = this.getDimensions();
+
+        //Top corner
+        this.totalAngle = (Math.PI / 2) - this.sprite.rotation;
+        this.corners[0].x = position.x + (0.6 * dimensions.height * Math.cos(this.totalAngle));
+        this.corners[0].y = position.y - (0.6 * dimensions.height * Math.sin(this.totalAngle));
+        
+        //Bottom right corner
+        this.totalAngle = ((3 * Math.PI) / 2) - this.sprite.rotation + this.phi;
+        this.corners[1].x = position.x + (this.c * Math.cos(this.totalAngle));
+        this.corners[1].y = position.y - (this.c * Math.sin(this.totalAngle));
+        
+        //Bottom left corner
+        this.totalAngle = ((3 * Math.PI) / 2) - this.sprite.rotation - this.phi;
+        this.corners[2].x = position.x + (this.c * Math.cos(this.totalAngle));
+        this.corners[2].y = position.y - (this.c * Math.sin(this.totalAngle));
+    };
+    
+    this.getNormals = function() {
+        this.normals = [];
+        
+        for (var i = 0; i < this.corners.length; i++) {
+            var j = i + 1;
+            if (j === this.corners.length) {
+                j = 0;
+            }
+            
+            this.normals.push(this.corners[i].subPoint(this.corners[j]).calcNormal());
+        }
+    };
+
+    this.detectCollision = detectCollision.bind(this);
+    this.detectCollisionAxis = detectCollisionAxis.bind(this);
+};
+
+Triangle.prototype.getPosition = function() {
+    return this.sprite.position;
+};
+
+Triangle.prototype.getDimensions = function() {
+    return this.dimensions;
 };
 
 module.exports = Triangle;
 
-},{"./point":128}],131:[function(require,module,exports){
+},{"./point":131}],134:[function(require,module,exports){
 'use strict';
 
 var calcStageDimensions = function() {
@@ -25196,6 +25544,7 @@ function Stage() {
 
     this._playerList = [];
     this._projectileList = [];
+    this._asteroidList = [];
     this._gameStage = new PIXI.Container(0x212226);
     this._gameRenderer = PIXI.autoDetectRenderer(this.width, this.height, {antialias: false, resolution: this.pixelRatio});
 
@@ -25258,9 +25607,27 @@ Stage.prototype.getPlayerList = function() {
     return this._playerList;
 };
 
+Stage.prototype.addAsteroid = function(asteroid) {
+    this._asteroidList.push(asteroid);
+};
+
+Stage.prototype.removeAsteroid = function(asteroid) {
+    for (var i = 0; i < this._asteroidList.length; i++) {
+        if (this._asteroidList[i].equals(asteroid)) {
+            this._asteroidList.splice(i, 1);
+            asteroid.remove();
+            break;
+        }
+    }
+};
+
+Stage.prototype.getAsteroidList = function() {
+    return this._asteroidList;
+};
+
 module.exports = new Stage();
 
-},{}],132:[function(require,module,exports){
+},{}],135:[function(require,module,exports){
 'use strict';
 
 var Projectile = require('../entities/projectile');
@@ -25295,8 +25662,7 @@ document.onkeyup = function(e) {
             currPlayer.setRotation('none');
         }
         if (e.keyCode === 32) {
-            var projectile = new Projectile(currPlayer);
-            Stage.addProjectile(projectile);
+            new Projectile(currPlayer);
         }    
     }
 };
@@ -25314,7 +25680,7 @@ module.exports = {
     clearPlayerInput: clearPlayerInput
 };
 
-},{"../entities/projectile":127}],133:[function(require,module,exports){
+},{"../entities/projectile":130}],136:[function(require,module,exports){
 var Constants = require('../constants');
 
 var width = Stage.width;
@@ -25378,7 +25744,7 @@ module.exports = {
     calcRelativeVector: calcRelativeVector
 };
 
-},{"../constants":125}],134:[function(require,module,exports){
+},{"../constants":125}],137:[function(require,module,exports){
 (function (process){
 // Copyright Joyent, Inc. and other Node contributors.
 //
@@ -25606,7 +25972,7 @@ var substr = 'ab'.substr(-1) === 'b'
 ;
 
 }).call(this,require('_process'))
-},{"_process":135}],135:[function(require,module,exports){
+},{"_process":138}],138:[function(require,module,exports){
 // shim for using process in browser
 
 var process = module.exports = {};
@@ -25698,7 +26064,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],136:[function(require,module,exports){
+},{}],139:[function(require,module,exports){
 (function (global){
 /*! https://mths.be/punycode v1.3.2 by @mathias */
 ;(function(root) {
@@ -26232,7 +26598,7 @@ process.umask = function() { return 0; };
 }(this));
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],137:[function(require,module,exports){
+},{}],140:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -26318,7 +26684,7 @@ var isArray = Array.isArray || function (xs) {
   return Object.prototype.toString.call(xs) === '[object Array]';
 };
 
-},{}],138:[function(require,module,exports){
+},{}],141:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -26405,13 +26771,13 @@ var objectKeys = Object.keys || function (obj) {
   return res;
 };
 
-},{}],139:[function(require,module,exports){
+},{}],142:[function(require,module,exports){
 'use strict';
 
 exports.decode = exports.parse = require('./decode');
 exports.encode = exports.stringify = require('./encode');
 
-},{"./decode":137,"./encode":138}],140:[function(require,module,exports){
+},{"./decode":140,"./encode":141}],143:[function(require,module,exports){
 // Copyright Joyent, Inc. and other Node contributors.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a
@@ -27120,7 +27486,7 @@ function isNullOrUndefined(arg) {
   return  arg == null;
 }
 
-},{"punycode":136,"querystring":139}],141:[function(require,module,exports){
+},{"punycode":139,"querystring":142}],144:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -27132,6 +27498,16 @@ var Collision = require('./collision');
 global.detectCollision = Collision.detectCollision;
 global.detectCollisionAxis = Collision.detectCollisionAxis;
 
+//Polyfill simple prototype inheritance
+Object.prototype.inherits = function(target) {
+    try {
+        var keys = Object.keys(target.prototype);
+        for (var i = 0; i < keys.length; i++) {
+            this.prototype[keys[i]] = target.prototype[keys[i]];
+        }
+    } catch (err) {}
+};
+
 require('./asteroids');
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./asteroids":123,"./collision":124,"./constants":125,"pixi.js":105}]},{},[141]);
+},{"./asteroids":123,"./collision":124,"./constants":125,"pixi.js":105}]},{},[144]);

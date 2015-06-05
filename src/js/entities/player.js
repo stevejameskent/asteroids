@@ -36,39 +36,47 @@ var Player = function(relativeX, relativeY, tint) {
 
     this.setPosition(this.relativePos);
 
-    this._playerLeft = new Triangle(new PIXI.Sprite(texture), anchorX, anchorY, -1 * Stage.width, 0, dimensions.x, dimensions.y, this._container);
-    this._playerRight = new Triangle(new PIXI.Sprite(texture), anchorX, anchorY, Stage.width, 0, dimensions.x, dimensions.y, this._container);
-    this._playerTop = new Triangle(new PIXI.Sprite(texture), anchorX, anchorY, 0, -1 * Stage.height, dimensions.x, dimensions.y, this._container);
-    this._playerBottom = new Triangle(new PIXI.Sprite(texture), anchorX, anchorY, 0, Stage.height, dimensions.x, dimensions.y, this._container);
+    Triangle.bind(this)(new PIXI.Sprite(texture), anchorX, anchorY, 0, 0, dimensions.x, dimensions.y);
+    this._playerLeft = new Triangle(new PIXI.Sprite(texture), anchorX, anchorY, -1 * Stage.width, 0, dimensions.x, dimensions.y);
+    this._playerRight = new Triangle(new PIXI.Sprite(texture), anchorX, anchorY, Stage.width, 0, dimensions.x, dimensions.y);
+    this._playerTop = new Triangle(new PIXI.Sprite(texture), anchorX, anchorY, 0, -1 * Stage.height, dimensions.x, dimensions.y);
+    this._playerBottom = new Triangle(new PIXI.Sprite(texture), anchorX, anchorY, 0, Stage.height, dimensions.x, dimensions.y);
 
-    Triangle.bind(this)(new PIXI.Sprite(texture), anchorX, anchorY, 0, 0, dimensions.x, dimensions.y, this._container);
+    this._container.addChild(this.sprite);
+    this._container.addChild(this._playerLeft.sprite);
+    this._container.addChild(this._playerRight.sprite);
+    this._container.addChild(this._playerTop.sprite);
+    this._container.addChild(this._playerBottom.sprite);
 
     if (tint) {
         this.setTint(tint);
     }
 
     Stage.addChild(this._container);
+    Stage.addPlayer(this);
 };
+
+Player.inherits(Triangle);
 
 Player.prototype.remove = function() {
     Stage.removeChild(this._container);
 }
 
 Player.prototype.setTint = function(tint) {
-    this.sprite.texture.tint = tint;
-    this._playerLeft.sprite.texture.tint = tint;
-    this._playerRight.sprite.texture.tint = tint;
-    this._playerTop.sprite.texture.tint = tint;
-    this._playerBottom.sprite.texture.tint = tint;
+    this.sprite.tint = tint;
+    this._playerLeft.sprite.tint = tint;
+    this._playerRight.sprite.tint = tint;
+    this._playerTop.sprite.tint = tint;
+    this._playerBottom.sprite.tint = tint;
 };
 
 Player.prototype.getTint = function(tint) {
-    return this.sprite.texture.tint;
+    return this.sprite.tint;
 };
 
-Player.prototype.setSpeed = function(speed) {
-    this.speed.x = speed.x;
-    this.speed.y = speed.y;
+Player.prototype.setSpeed = function(speedX, speedY) {
+    this.speed.x = speedX;
+    this.speed.y = speedY;
 };
 
 Player.prototype.setPosition = function(position) {
@@ -79,8 +87,12 @@ Player.prototype.setPosition = function(position) {
     this._absolutePos.y = position.y;
     calcAbsolute(this._absolutePos);
 
-    this._container.x = this._absolutePos.x;
-    this._container.y = this._absolutePos.y;
+    this._container.position.x = this._absolutePos.x;
+    this._container.position.y = this._absolutePos.y;
+};
+
+Player.prototype.getPosition = function() {
+    return this._container.position;
 };
 
 Player.prototype.setJet = function(jet) {
@@ -133,8 +145,7 @@ Player.prototype.step = function() {
     /* Calculate acceleration and new velocity vectors when jet is on */
     if (this.jet) {
         var magnitudes = calcAcceleration(this.sprite.rotation - (0.5 * Math.PI));
-        this.speed.x += magnitudes.accelerationX;
-        this.speed.y += magnitudes.accelerationY;
+        this.setSpeed(this.speed.x + magnitudes.accelerationX, this.speed.y + magnitudes.accelerationY);
     }
 
     /* Cap player velocity at Constants.PLAYER_MAX_SPEED */

@@ -23,6 +23,7 @@ function Stage() {
 
     this._playerList = [];
     this._projectileList = [];
+    this._asteroidList = [];
     this._gameStage = new PIXI.Container(0x212226);
     this._gameRenderer = PIXI.autoDetectRenderer(this.width, this.height, {antialias: false, resolution: this.pixelRatio});
 
@@ -83,6 +84,24 @@ Stage.prototype.removePlayer = function(player) {
 
 Stage.prototype.getPlayerList = function() {
     return this._playerList;
+};
+
+Stage.prototype.addAsteroid = function(asteroid) {
+    this._asteroidList.push(asteroid);
+};
+
+Stage.prototype.removeAsteroid = function(asteroid) {
+    for (var i = 0; i < this._asteroidList.length; i++) {
+        if (this._asteroidList[i].equals(asteroid)) {
+            this._asteroidList.splice(i, 1);
+            asteroid.remove();
+            break;
+        }
+    }
+};
+
+Stage.prototype.getAsteroidList = function() {
+    return this._asteroidList;
 };
 
 module.exports = new Stage();

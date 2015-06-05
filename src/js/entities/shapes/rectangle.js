@@ -2,12 +2,8 @@
 
 var Point = require('./point');
 
-// var pixelationFilter = new PIXI.filters.PixelateFilter();
-
-var Rectangle = function(texture, anchorX, anchorY, x, y, height, width) {
-    this.sprite = new PIXI.Sprite(texture);
-    // this.sprite.filters = [pixelationFilter];
-    // this.sprite.filters[0].size = {x: 1, y: 1};
+var Rectangle = function(sprite, anchorX, anchorY, x, y, height, width) {
+    this.sprite = sprite;
     this.sprite.anchor.x = anchorX;
     this.sprite.anchor.y = anchorY;
     
@@ -16,34 +12,35 @@ var Rectangle = function(texture, anchorX, anchorY, x, y, height, width) {
     
     this.sprite.height = height;
     this.sprite.width = width;
+
+    this.dimensions = {
+        height: this.sprite.height,
+        width: this.sprite.width
+    };
     
     this.lateral = Math.sqrt((this.sprite.height / 2 * this.sprite.height / 2) + (this.sprite.width / 2 * this.sprite.width / 2));
     
-    this.corners = [];
+    this.corners = [new Point(0, 0), new Point(0, 0), new Point(0, 0), new Point(0, 0)];
     this.normals = [];
     
     this.getCorners = function() {
-        this.corners = [];
+        var position = this.getPosition();
         
         //Top right corner
-        var cornerX = this.sprite.position.x + (this.lateral * Math.cos(this.sprite.rotation - (Math.PI / 4)));
-        var cornerY = this.sprite.position.y + (this.lateral * Math.sin(this.sprite.rotation - (Math.PI / 4)));
-        this.corners.push(new Point(cornerX, cornerY));
+        this.corners[0].x = position.x + (this.lateral * Math.cos(this.sprite.rotation - (Math.PI / 4)));
+        this.corners[0].y = position.y + (this.lateral * Math.sin(this.sprite.rotation - (Math.PI / 4)));
     
         //Bottom right corner
-        cornerX = this.sprite.position.x + (this.lateral * Math.cos(this.sprite.rotation + (Math.PI / 4)));
-        cornerY = this.sprite.position.y + (this.lateral * Math.sin(this.sprite.rotation + (Math.PI / 4)));
-        this.corners.push(new Point(cornerX, cornerY));
+        this.corners[1].x = position.x + (this.lateral * Math.cos(this.sprite.rotation + (Math.PI / 4)));
+        this.corners[1].y = position.y + (this.lateral * Math.sin(this.sprite.rotation + (Math.PI / 4)));
     
         //Bottom left corner
-        cornerX = this.sprite.position.x - (this.lateral * Math.cos(this.sprite.rotation - (Math.PI / 4)));
-        cornerY = this.sprite.position.y - (this.lateral * Math.sin(this.sprite.rotation - (Math.PI / 4)));
-        this.corners.push(new Point(cornerX, cornerY));
+        this.corners[2].x = position.x - (this.lateral * Math.cos(this.sprite.rotation - (Math.PI / 4)));
+        this.corners[2].y = position.y - (this.lateral * Math.sin(this.sprite.rotation - (Math.PI / 4)));
     
         //Top left corner
-        cornerX = this.sprite.position.x - (this.lateral * Math.cos(this.sprite.rotation + (Math.PI / 4)));
-        cornerY = this.sprite.position.y - (this.lateral * Math.sin(this.sprite.rotation + (Math.PI / 4)));
-        this.corners.push(new Point(cornerX, cornerY));
+        this.corners[3].x = position.x - (this.lateral * Math.cos(this.sprite.rotation + (Math.PI / 4)));
+        this.corners[3].y = position.y - (this.lateral * Math.sin(this.sprite.rotation + (Math.PI / 4)));
     };
     
     this.getNormals = function() {
@@ -61,8 +58,14 @@ var Rectangle = function(texture, anchorX, anchorY, x, y, height, width) {
 
     this.detectCollision = detectCollision.bind(this);
     this.detectCollisionAxis = detectCollisionAxis.bind(this);
-    
-    Stage.addChild(this.sprite);
+};
+
+Rectangle.prototype.getPosition = function() {
+    return this.sprite.position;
+};
+
+Rectangle.prototype.getDimensions = function() {
+    return this.dimensions;
 };
 
 module.exports = Rectangle;

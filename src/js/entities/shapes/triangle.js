@@ -2,7 +2,7 @@
 
 var Point = require('./point');
 
-var Triangle = function(sprite, anchorX, anchorY, x, y, height, width, container) {
+var Triangle = function(sprite, anchorX, anchorY, x, y, height, width) {
     this.sprite = sprite;
     this.sprite.anchor.x = anchorX;
     this.sprite.anchor.y = anchorY;
@@ -12,8 +12,13 @@ var Triangle = function(sprite, anchorX, anchorY, x, y, height, width, container
     
     this.sprite.height = height;
     this.sprite.width = width;
+
+    this.dimensions = {
+        height: this.sprite.height,
+        width: this.sprite.width
+    };
     
-    this.corners = [];
+    this.corners = [new Point(0, 0), new Point(0, 0), new Point(0, 0)];
     this.normals = [];
     
     this.c = Math.sqrt((.4 * this.sprite.height * .4 * this.sprite.height) + (.5 * this.sprite.width * .5 * this.sprite.width));
@@ -21,23 +26,23 @@ var Triangle = function(sprite, anchorX, anchorY, x, y, height, width, container
     this.phi = Math.acos((.4 * this.sprite.height) / this.c);
     
     this.getCorners = function() {
+        var position = this.getPosition();
+        var dimensions = this.getDimensions();
+
         //Top corner
         this.totalAngle = (Math.PI / 2) - this.sprite.rotation;
-        var cornerX = this.sprite.position.x + (0.6 * this.sprite.height * Math.cos(this.totalAngle));
-        var cornerY = this.sprite.position.y - (0.6 * this.sprite.height * Math.sin(this.totalAngle));
-        this.corners[0] = new Point(cornerX, cornerY);
+        this.corners[0].x = position.x + (0.6 * dimensions.height * Math.cos(this.totalAngle));
+        this.corners[0].y = position.y - (0.6 * dimensions.height * Math.sin(this.totalAngle));
         
         //Bottom right corner
         this.totalAngle = ((3 * Math.PI) / 2) - this.sprite.rotation + this.phi;
-        cornerX = this.sprite.position.x + (this.c * Math.cos(this.totalAngle));
-        cornerY = this.sprite.position.y - (this.c * Math.sin(this.totalAngle));
-        this.corners[1] = new Point(cornerX, cornerY);
+        this.corners[1].x = position.x + (this.c * Math.cos(this.totalAngle));
+        this.corners[1].y = position.y - (this.c * Math.sin(this.totalAngle));
         
         //Bottom left corner
         this.totalAngle = ((3 * Math.PI) / 2) - this.sprite.rotation - this.phi;
-        cornerX = this.sprite.position.x + (this.c * Math.cos(this.totalAngle));
-        cornerY = this.sprite.position.y - (this.c * Math.sin(this.totalAngle));
-        this.corners[2] = new Point(cornerX, cornerY);
+        this.corners[2].x = position.x + (this.c * Math.cos(this.totalAngle));
+        this.corners[2].y = position.y - (this.c * Math.sin(this.totalAngle));
     };
     
     this.getNormals = function() {
@@ -55,12 +60,14 @@ var Triangle = function(sprite, anchorX, anchorY, x, y, height, width, container
 
     this.detectCollision = detectCollision.bind(this);
     this.detectCollisionAxis = detectCollisionAxis.bind(this);
+};
 
-    if (container) {
-        container.addChild(this.sprite);
-    } else {
-        Stage.addChild(this.sprite);
-    }
+Triangle.prototype.getPosition = function() {
+    return this.sprite.position;
+};
+
+Triangle.prototype.getDimensions = function() {
+    return this.dimensions;
 };
 
 module.exports = Triangle;

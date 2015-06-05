@@ -32,8 +32,7 @@ document.onkeyup = function(e) {
             currPlayer.setRotation('none');
         }
         if (e.keyCode === 32) {
-            var projectile = new Projectile(currPlayer);
-            Stage.addProjectile(projectile);
+            new Projectile(currPlayer);
         }    
     }
 };

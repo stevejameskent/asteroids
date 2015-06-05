@@ -89,6 +89,7 @@ var Projectile = function(player) {
     this.detectCollisionAxis = detectCollisionAxis.bind(this);
     
     Stage.addChild(this.sprite);
+    Stage.addProjectile(this);
 };
 
 Projectile.prototype.remove = function() {
@@ -113,11 +114,11 @@ Projectile.prototype.setSpeed = function(speed) {
 };
 
 Projectile.prototype.setTint = function(tint) {
-    this.sprite.texture.tint = tint;
+    this.sprite.tint = tint;
 };
 
 Projectile.prototype.getTint = function(tint) {
-    return this.sprite.texture.tint;
+    return this.sprite.tint;
 };
 
 Projectile.prototype.step = function() {

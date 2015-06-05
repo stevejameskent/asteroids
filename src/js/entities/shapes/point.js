@@ -23,4 +23,9 @@ Point.prototype.equals = function(point2) {
     }
 };
 
+PIXI.Point.prototype.calcDot = Point.prototype.calcDot;
+PIXI.Point.prototype.calcNormal = Point.prototype.calcNormal;
+PIXI.Point.prototype.subPoint = Point.prototype.subPoint;
+PIXI.Point.prototype.equals = Point.prototype.equals;
+
 module.exports = Point;

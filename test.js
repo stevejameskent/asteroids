@@ -1,10 +1,3 @@
-/**
- * Static HTTP Server
- *
- * Create a static file server instance to serve files
- * and folder in the './public' folder
- */
-
 var express = require('express');
 var app = express();
 var http = require('http')

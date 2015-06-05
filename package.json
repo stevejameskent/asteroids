@@ -28,7 +28,7 @@
     "dependencies": {
         "browserify": "^10.2.3",
         "express": "~3.4.4",
-        "node-static": "0.7.6"
+        "socket.io": "^1.3.5"
     },
     "devDependencies": {
         "grunt-browserify": "^3.8.0",
